@@ -748,6 +748,36 @@ body {
     background: #d1d5db;
     cursor: not-allowed;
 }
+
+/* === EU AI ACT DISCLAIMER === */
+.ai-disclaimer {
+    background: #fff8e1;
+    border: 1px solid #f9a825;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #5d4037;
+}
+.ai-disclaimer-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.ai-disclaimer strong { color: #e65100; }
+.ai-disclaimer a { color: #0066cc; text-decoration: underline; }
+
+.chat-disclaimer {
+    background: #fff3e0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 0 12px 8px 12px;
+    font-size: 11px;
+    color: #795548;
+    line-height: 1.4;
+    text-align: center;
+    border: 1px solid #ffe0b2;
+}
 </style>
 </head>
 <body>
@@ -768,6 +798,11 @@ body {
 <div class="intro-card fade-in">
 <h2>Uw uitslagen, in gewone taal</h2>
 <p>Selecteer een voorbeeldpatient en zie hoe MedBegrip medische uitslagen vertaalt naar taal die iedereen begrijpt. Tik op <span class="med-term" data-term="voorbeeld">onderstreepte woorden</span> voor extra uitleg.</p>
+</div>
+
+<div class="ai-disclaimer fade-in">
+<div class="ai-disclaimer-icon">&#x2139;&#xFE0F;</div>
+<div><strong>AI-hulpmiddel — geen medisch advies.</strong> MedBegrip vertaalt medische uitslagen naar begrijpelijke taal met behulp van kunstmatige intelligentie. Dit systeem stelt geen diagnoses en vervangt niet het oordeel van uw arts. Bespreek uw uitslagen altijd met uw behandelaar. Conform EU AI Act, Artikel 52: transparantieverplichting.</div>
 </div>
 
 <div class="patient-section">
@@ -830,6 +865,7 @@ body {
 <div class="chat-body">
 <div class="chat-messages" id="chat-messages"></div>
 <div class="chat-suggestions" id="chat-suggestions"></div>
+<div class="chat-disclaimer">Dit is een AI-hulpmiddel dat uitslagen uitlegt in eenvoudige taal. Het stelt geen diagnoses en vervangt niet uw arts.</div>
 <div class="chat-input-bar">
 <input type="text" class="chat-input" id="chat-input" placeholder="Typ hier uw vraag..." onkeydown="if(event.key==='Enter')sendChatMessage()">
 <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">&#x27A4;</button>
@@ -847,6 +883,7 @@ body {
 <div class="footer">
 <p>MedBegrip Demo v2.0 — Concept voor begrijpelijke medische communicatie</p>
 <p style="margin-top:4px;">Dit is een demonstratie met fictieve patientgegevens. Niet voor medisch gebruik.</p>
+<p style="margin-top:4px; font-size: 11px; opacity: 0.7;">Conform EU AI Act Art. 52 — AI-gegenereerde content is als zodanig gemarkeerd.</p>
 </div>
 </div>
 
@@ -1490,7 +1527,7 @@ function initChat(patientId) {
     chatOpen = true;
     messages.innerHTML = '';
 
-    addAIMessage('Heeft u vragen over uw uitslagen? Stel ze hieronder en ik leg het uit in eenvoudige taal. U kunt ook een van de voorgestelde vragen kiezen.');
+    addAIMessage('Heeft u vragen over uw uitslagen? Ik leg ze uit in eenvoudige taal. Kies een voorgestelde vraag of typ uw eigen vraag. Let op: ik ben een AI-hulpmiddel en vervang niet het gesprek met uw arts.');
 
     const patientChat = chatResponses[patientId];
     if (patientChat) {
