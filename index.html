@@ -1058,7 +1058,7 @@ function renderAI(id) {
     html += '<div class="ai-greeting">' + processTerms(ai.greeting) + '</div>';
 
     // Term hint
-    html += '<div class="term-hint"><span class="term-hint-icon">&#x1F4A1;</span> Woorden met een <span class="med-term" data-term="voorbeeld" onclick="showTermPopup(event, 'voorbeeld')" style="font-size:13px;">stippellijn</span> kun je aantikken voor uitleg</div>';
+    html += '<div class="term-hint"><span class="term-hint-icon">&#x1F4A1;</span> Woorden met een <span class="med-term" data-term="voorbeeld" onclick="showTermPopup(event, \'voorbeeld\')" style="font-size:13px;">stippellijn</span> kun je aantikken voor uitleg</div>';
 
     // Stats bar
     let normalCount = data.lab.filter(l => l.status === 'normal').length;
