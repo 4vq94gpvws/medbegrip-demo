@@ -1,1033 +1,935 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MedBegrip — Uw uitslagen in begrijpelijke taal</title>
-<style>
-:root {
-    --primary: #0066cc;
-    --primary-light: #e6f0ff;
-    --accent: #00a67d;
-    --accent-light: #e6f7f3;
-    --warning: #e6a817;
-    --warning-light: #fef9e7;
-    --danger: #d63031;
-    --danger-light: #fde8e8;
-    --text: #1a1a2e;
-    --text-light: #6b7280;
-    --bg: #f8f9fb;
-    --card: #ffffff;
-    --border: #e5e7eb;
-    --radius: 12px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-    --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-}
-
-.header {
-    background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-    color: white;
-    padding: 16px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-}
-
-.header-inner {
-    max-width: 800px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-icon { font-size: 28px; }
-.logo h1 { font-size: 20px; font-weight: 700; }
-.logo-sub { font-weight: 300; opacity: 0.8; font-size: 14px; }
-
-.header-badge {
-    background: rgba(255,255,255,0.2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.main {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px 16px;
-}
-
-.intro-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-    border-left: 4px solid var(--primary);
-}
-
-.intro-card h2 { font-size: 18px; margin-bottom: 6px; color: var(--primary); }
-.intro-card p { font-size: 14px; color: var(--text-light); }
-
-.patient-section { margin-bottom: 24px; }
-.section-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-light);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 10px;
-}
-
-.patient-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-@media (max-width: 500px) {
-    .patient-cards { grid-template-columns: 1fr; }
-}
-
-.patient-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 14px;
-    cursor: pointer;
-    border: 2px solid var(--border);
-    transition: all 0.2s;
-    box-shadow: var(--shadow);
-}
-
-.patient-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.patient-card.active { border-color: var(--primary); background: var(--primary-light); }
-
-.patient-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
-.patient-info { font-size: 13px; color: var(--text-light); margin-bottom: 6px; }
-.patient-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.tag-routine { background: var(--accent-light); color: var(--accent); }
-.tag-aandacht { background: var(--warning-light); color: #b7950b; }
-.tag-afwijkend { background: var(--danger-light); color: var(--danger); }
-.tag-controle { background: #f0e6ff; color: #7c3aed; }
-
-.results-panel {
-    display: none;
-    margin-top: 24px;
-}
-
-.results-panel.visible { display: block; }
-
-.view-toggle {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
-.toggle-btn {
-    padding: 8px 16px;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    background: var(--card);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-light);
-    transition: all 0.2s;
-}
-
-.toggle-btn.active {
-    border-color: var(--primary);
-    background: var(--primary-light);
-    color: var(--primary);
-}
-
-.level-selector {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 16px;
-    align-items: center;
-}
-
-.level-btn {
-    padding: 5px 12px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    background: var(--card);
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
-}
-
-.level-btn.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
-.typing-indicator {
-    display: none;
-    padding: 20px;
-    text-align: center;
-}
-
-.typing-indicator.active { display: flex; justify-content: center; gap: 4px; align-items: center; }
-
-.typing-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--primary);
-    animation: typing 1.4s infinite;
-}
-
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typing {
-    0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
-    30% { opacity: 1; transform: scale(1); }
-}
-
-.ai-explanation { animation: fadeIn 0.4s ease; }
-.lab-original { animation: fadeIn 0.4s ease; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.ai-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-}
-
-.ai-avatar {
-    width: 40px; height: 40px;
-    background: var(--primary-light);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-}
-
-.ai-header-text h3 { font-size: 16px; }
-.ai-header-text span { font-size: 13px; color: var(--text-light); }
-
-.ai-greeting {
-    font-size: 15px;
-    color: var(--text);
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--primary-light);
-    border-radius: 8px;
-}
-
-.stats-bar {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-    padding: 10px 14px;
-    background: #f1f5f9;
-    border-radius: 8px;
-    font-size: 13px;
-}
-
-.stat { display: flex; align-items: center; gap: 6px; }
-.stat-dot { width: 10px; height: 10px; border-radius: 50%; }
-
-.result-item {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 12px;
-    border-left: 4px solid;
-    box-shadow: var(--shadow);
-}
-
-.result-good { border-color: var(--accent); }
-.result-attention { border-color: var(--warning); }
-.result-alert { border-color: var(--danger); }
-.result-info { border-color: var(--primary); }
-
-.result-title {
-    font-weight: 700;
-    font-size: 15px;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.result-value {
-    font-size: 13px;
-    color: var(--text-light);
-    padding: 6px 10px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    font-family: 'SF Mono', monospace;
-}
-
-.result-explain {
-    font-size: 14px;
-    line-height: 1.7;
-    color: #374151;
-}
-
-.summary-box {
-    background: linear-gradient(135deg, var(--primary-light), #f0f7ff);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-top: 16px;
-    border: 1px solid #c5d9f0;
-}
-
-.summary-box h4 { font-size: 14px; color: var(--primary); margin-bottom: 8px; }
-.summary-box p { font-size: 14px; line-height: 1.6; }
-
-.action-items { margin-top: 12px; }
-.action-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 8px 0;
-    font-size: 14px;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-
-.action-icon { font-size: 16px; flex-shrink: 0; }
-
-.lab-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.lab-header h3 { font-size: 16px; }
-.lab-date { font-size: 13px; color: var(--text-light); }
-
-.lab-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-
-.lab-table th {
-    text-align: left;
-    padding: 8px 10px;
-    background: #f1f5f9;
-    font-weight: 600;
-    border-bottom: 2px solid var(--border);
-}
-
-.lab-table td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-}
-
-.lab-flag {
-    font-size: 11px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-
-.flag-high { background: #fde8e8; color: var(--danger); }
-.flag-low { background: #fff3cd; color: #856404; }
-
-/* === MEDISCHE TERM TOOLTIP SYSTEEM === */
-.med-term {
-    border-bottom: 2px dotted var(--primary);
-    color: var(--primary);
-    cursor: help;
-    font-weight: 500;
-    position: relative;
-    transition: all 0.15s;
-    padding: 0 1px;
-}
-
-.med-term:hover {
-    background: var(--primary-light);
-    border-radius: 3px;
-}
-
-/* Tooltip popup */
-.term-popup {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
-    max-width: 320px;
-    min-width: 240px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-    animation: popIn 0.2s ease;
-    pointer-events: auto;
-}
-
-.term-popup.visible { display: block; }
-
-@keyframes popIn {
-    from { opacity: 0; transform: scale(0.95) translateY(5px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.term-popup-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-}
-
-.term-popup-title {
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--primary);
-}
-
-.term-popup-close {
-    width: 26px;
-    height: 26px;
-    border: none;
-    background: #f1f5f9;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-light);
-    transition: all 0.15s;
-}
-
-.term-popup-close:hover { background: #e2e8f0; color: var(--text); }
-
-.term-popup-icon {
-    font-size: 24px;
-    margin-bottom: 6px;
-}
-
-.term-popup-explain {
-    font-size: 14px;
-    line-height: 1.6;
-    color: #374151;
-}
-
-.term-popup-hint {
-    margin-top: 10px;
-    font-size: 12px;
-    color: var(--text-light);
-    font-style: italic;
-}
-
-/* Overlay */
-.popup-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.15);
-    z-index: 9998;
-}
-
-.popup-overlay.visible { display: block; }
-
-/* Term hint banner */
-.term-hint {
-    background: linear-gradient(135deg, #f0f7ff, #e6f0ff);
-    border: 1px solid #c5d9f0;
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--primary);
-}
-
-.term-hint-icon { font-size: 18px; }
-
-.cta-section {
-    text-align: center;
-    padding: 30px 20px;
-    margin-top: 24px;
-}
-
-.cta-section h3 { font-size: 18px; margin-bottom: 8px; }
-.cta-section p { color: var(--text-light); font-size: 14px; margin-bottom: 16px; }
-
-.cta-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px 32px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.cta-btn:hover { background: #0052a3; transform: translateY(-1px); }
-
-.footer {
-    text-align: center;
-    padding: 20px;
-    font-size: 12px;
-    color: var(--text-light);
-    border-top: 1px solid var(--border);
-    margin-top: 30px;
-}
-
-.emoji-icon { font-size: 18px; }
-
-.fade-in { animation: fadeIn 0.4s ease; }
-
-/* === CHAT SYSTEEM === */
-.chat-container {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    margin-top: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-}
-
-.chat-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    background: linear-gradient(135deg, #f0f7ff, #e6f0ff);
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    user-select: none;
-}
-
-.chat-header-icon {
-    width: 32px;
-    height: 32px;
-    background: var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 16px;
-    flex-shrink: 0;
-}
-
-.chat-header-text h4 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 1px;
-}
-
-.chat-header-text span {
-    font-size: 12px;
-    color: var(--text-light);
-}
-
-.chat-toggle-icon {
-    margin-left: auto;
-    font-size: 18px;
-    color: var(--text-light);
-    transition: transform 0.3s;
-}
-
-.chat-container.open .chat-toggle-icon {
-    transform: rotate(180deg);
-}
-
-.chat-body {
-    display: none;
-    flex-direction: column;
-    max-height: 500px;
-}
-
-.chat-container.open .chat-body {
-    display: flex;
-}
-
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    min-height: 120px;
-    max-height: 380px;
-    scroll-behavior: smooth;
-}
-
-.chat-msg {
-    margin-bottom: 12px;
-    animation: fadeIn 0.3s ease;
-}
-
-.chat-msg-user {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.chat-msg-user .chat-bubble {
-    background: var(--primary);
-    color: white;
-    border-radius: 12px 12px 2px 12px;
-    padding: 10px 14px;
-    max-width: 85%;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.chat-msg-ai {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-}
-
-.chat-msg-ai .chat-ai-avatar {
-    width: 28px;
-    height: 28px;
-    background: var(--primary-light);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.chat-msg-ai .chat-bubble {
-    background: #f1f5f9;
-    color: var(--text);
-    border-radius: 12px 12px 12px 2px;
-    padding: 10px 14px;
-    max-width: 85%;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.chat-bubble .med-term {
-    font-size: 14px;
-}
-
-.chat-typing {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    margin-bottom: 12px;
-}
-
-.chat-typing .chat-ai-avatar {
-    width: 28px;
-    height: 28px;
-    background: var(--primary-light);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-}
-
-.chat-typing-dots {
-    background: #f1f5f9;
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
-    gap: 4px;
-}
-
-.chat-typing-dots .typing-dot {
-    width: 6px;
-    height: 6px;
-}
-
-.chat-suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 0 16px 12px;
-}
-
-.chat-suggestion-btn {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 13px;
-    color: var(--primary);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.chat-suggestion-btn:hover {
-    background: var(--primary-light);
-    border-color: var(--primary);
-}
-
-.chat-input-bar {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--border);
-    background: #fafbfc;
-}
-
-.chat-input {
-    flex: 1;
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 10px 16px;
-    font-size: 14px;
-    outline: none;
-    font-family: inherit;
-    transition: border-color 0.2s;
-}
-
-.chat-input:focus {
-    border-color: var(--primary);
-}
-
-.chat-input::placeholder {
-    color: #9ca3af;
-}
-
-.chat-send-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: var(--primary);
-    color: white;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-}
-
-.chat-send-btn:hover {
-    background: #0052a3;
-}
-
-.chat-send-btn:disabled {
-    background: #d1d5db;
-    cursor: not-allowed;
-}
-
-/* === EU AI ACT DISCLAIMER === */
-.ai-disclaimer {
-    background: #fff8e1;
-    border: 1px solid #f9a825;
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 13px;
-    line-height: 1.5;
-    color: #5d4037;
-}
-.ai-disclaimer-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
-.ai-disclaimer strong { color: #e65100; }
-.ai-disclaimer a { color: #0066cc; text-decoration: underline; }
-
-.chat-disclaimer {
-    background: #fff3e0;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin: 0 12px 8px 12px;
-    font-size: 11px;
-    color: #795548;
-    line-height: 1.4;
-    text-align: center;
-    border: 1px solid #ffe0b2;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedBegrip — Lab uitslagen in begrijpelijke taal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #0066CC;
+            --primary-dark: #004C99;
+            --primary-light: #E6F0FF;
+            --accent: #00A878;
+            --accent-light: #E6F7F2;
+            --warning: #E67E22;
+            --warning-light: #FFF3E6;
+            --danger: #E74C3C;
+            --danger-light: #FDEDEC;
+            --text: #1A1A2E;
+            --text-secondary: #5A5A7A;
+            --bg: #F5F7FA;
+            --card: #FFFFFF;
+            --border: #E2E8F0;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,102,204,0.3);
+        }
+
+        .header-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-sub {
+            font-size: 12px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .header-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Main content */
+        .main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+
+        /* Intro card */
+        .intro-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+
+        .intro-card h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--primary-dark);
+        }
+
+        .intro-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        /* Patient selector */
+        .patient-section {
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .patient-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .patient-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .patient-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .patient-card.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .patient-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .patient-info {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .patient-tag {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tag-routine { background: var(--accent-light); color: var(--accent); }
+        .tag-aandacht { background: var(--warning-light); color: var(--warning); }
+        .tag-afwijkend { background: var(--danger-light); color: var(--danger); }
+        .tag-controle { background: var(--primary-light); color: var(--primary); }
+
+        /* Results panel */
+        .results-panel {
+            display: none;
+        }
+
+        .results-panel.visible {
+            display: block;
+        }
+
+        /* Toggle view */
+        .view-toggle {
+            display: flex;
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 4px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.3);
+        }
+
+        /* Original lab view */
+        .lab-original {
+            background: var(--card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .lab-header {
+            background: #F8FAFC;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lab-header h3 {
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .lab-date {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .lab-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .lab-table th {
+            text-align: left;
+            padding: 10px 16px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            background: #F8FAFC;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .lab-table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .lab-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .value-normal { color: var(--accent); font-weight: 600; }
+        .value-high { color: var(--danger); font-weight: 700; }
+        .value-low { color: var(--warning); font-weight: 700; }
+
+        .flag {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 6px;
+        }
+        .flag-high { background: var(--danger); }
+        .flag-low { background: var(--warning); }
+
+        /* AI explanation view */
+        .ai-explanation {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .ai-header {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #F0F7FF 100%);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-avatar {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .ai-header-text h3 {
+            font-size: 15px;
+            color: var(--primary-dark);
+        }
+
+        .ai-header-text span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .ai-content {
+            padding: 20px;
+        }
+
+        .ai-greeting {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .result-item {
+            margin-bottom: 16px;
+            padding: 16px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .result-good {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+
+        .result-attention {
+            background: var(--warning-light);
+            border-color: var(--warning);
+        }
+
+        .result-alert {
+            background: var(--danger-light);
+            border-color: var(--danger);
+        }
+
+        .result-info {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .result-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+
+        .status-label {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .status-good { background: var(--accent); color: white; }
+        .status-attention { background: var(--warning); color: white; }
+        .status-alert { background: var(--danger); color: white; }
+        .status-info { background: var(--primary); color: white; }
+
+        .result-value {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .result-explain {
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #E8F4FD 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 8px;
+        }
+
+        .summary-box h4 {
+            font-size: 15px;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .summary-box p {
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .action-items {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,102,204,0.15);
+        }
+
+        .action-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .action-icon {
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Taalniveau selector */
+        .level-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            background: var(--card);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .level-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .level-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Chat section */
+        .chat-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .chat-section.visible {
+            display: block;
+        }
+
+        .chat-container {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #F0F7FF 100%);
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header h3 {
+            font-size: 15px;
+            color: var(--primary-dark);
+        }
+
+        .chat-header span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .chat-disclaimer {
+            background: #FFF9E6;
+            border: 1px solid #F0E0A0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 12px;
+            font-size: 12px;
+            color: #7A6500;
+            line-height: 1.5;
+        }
+
+        .chat-messages {
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            min-height: 100px;
+        }
+
+        .chat-msg {
+            margin-bottom: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-msg.user {
+            flex-direction: row-reverse;
+        }
+
+        .chat-msg-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .chat-msg.bot .chat-msg-avatar {
+            background: var(--primary);
+            color: white;
+        }
+
+        .chat-msg.user .chat-msg-avatar {
+            background: var(--accent);
+            color: white;
+        }
+
+        .chat-msg-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .chat-msg.bot .chat-msg-bubble {
+            background: #F1F5F9;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-msg.user .chat-msg-bubble {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-suggestions {
+            padding: 0 16px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chat-suggestion {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--card);
+            font-size: 13px;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chat-suggestion:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            background: #F8FAFC;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+
+        .chat-send {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .chat-send:hover {
+            background: var(--primary-dark);
+        }
+
+        .chat-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chat-typing {
+            padding: 8px 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chat-typing.visible {
+            display: flex;
+        }
+
+        .chat-typing-dots span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin: 0 1px;
+            animation: typing 1.2s infinite;
+        }
+        .chat-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .chat-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        /* CTA section */
+        .cta-section {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 2px dashed var(--border);
+        }
+
+        .cta-section h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cta-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,102,204,0.3);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        /* Typing animation */
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin: 0 2px;
+            animation: typing 1.2s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1); }
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .typing-indicator.visible {
+            display: block;
+        }
+
+        /* Fade in animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .stat-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .patient-cards {
+                grid-template-columns: 1fr;
+            }
+            .header-badge {
+                display: none;
+            }
+            .logo h1 {
+                font-size: 19px;
+            }
+            .chat-suggestion {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div class="header">
-<div class="header-inner">
-<div class="logo">
-<div class="logo-icon">&#x1F9EA;</div>
-<div>
-<h1>MedBegrip<span class="logo-sub"> | Patient Portal</span></h1>
-</div>
-</div>
-<div class="header-badge">DEMO v2.0</div>
-</div>
+    <div class="header-inner">
+        <div class="logo">
+            <div class="logo-icon">MB</div>
+            <div>
+                <h1>MedBegrip<span class="logo-sub"> | Patient Portal</span></h1>
+            </div>
+        </div>
+        <div class="header-badge">DEMO v1.0</div>
+    </div>
 </div>
 
 <div class="main">
-<div class="intro-card fade-in">
-<h2>Uw uitslagen, in gewone taal</h2>
-<p>Selecteer een voorbeeldpatient en zie hoe MedBegrip medische uitslagen vertaalt naar taal die iedereen begrijpt. Tik op <span class="med-term" data-term="voorbeeld">onderstreepte woorden</span> voor extra uitleg.</p>
-</div>
 
-<div class="ai-disclaimer fade-in">
-<div class="ai-disclaimer-icon">&#x2139;&#xFE0F;</div>
-<div><strong>AI-hulpmiddel — geen medisch advies.</strong> MedBegrip vertaalt medische uitslagen naar begrijpelijke taal met behulp van kunstmatige intelligentie. Dit systeem stelt geen diagnoses en vervangt niet het oordeel van uw arts. Bespreek uw uitslagen altijd met uw behandelaar. Conform EU AI Act, Artikel 52: transparantieverplichting.</div>
-</div>
+    <div class="intro-card fade-in">
+        <h2>Uw laboratoriumuitslagen, helder uitgelegd</h2>
+        <p>MedBegrip vertaalt complexe medische uitslagen naar begrijpelijke taal. Selecteer hieronder een voorbeeldpatient om te zien hoe het werkt.</p>
+    </div>
 
-<div class="patient-section">
-<div class="section-label">Selecteer een voorbeeldpatient</div>
-<div class="patient-cards">
-<div class="patient-card" onclick="selectPatient('routine')" id="card-routine">
-<div class="patient-name">Maria, 52 jaar</div>
-<div class="patient-info">Jaarlijkse bloedcontrole</div>
-<span class="patient-tag tag-routine">Routine check</span>
-</div>
-<div class="patient-card" onclick="selectPatient('diabetes')" id="card-diabetes">
-<div class="patient-name">Ahmed, 64 jaar</div>
-<div class="patient-info">Diabetes type 2 controle</div>
-<span class="patient-tag tag-aandacht">Aandachtspunten</span>
-</div>
-<div class="patient-card" onclick="selectPatient('nier')" id="card-nier">
-<div class="patient-name">Jan, 71 jaar</div>
-<div class="patient-info">Nierfunctie controle</div>
-<span class="patient-tag tag-afwijkend">Afwijkende waarden</span>
-</div>
-<div class="patient-card" onclick="selectPatient('schildklier')" id="card-schildklier">
-<div class="patient-name">Lisa, 38 jaar</div>
-<div class="patient-info">Schildklier + vermoeidheid</div>
-<span class="patient-tag tag-controle">Nader onderzoek</span>
-</div>
-</div>
-</div>
+    <div class="patient-section">
+        <div class="section-label">Selecteer een voorbeeldpatient</div>
+        <div class="patient-cards">
+            <div class="patient-card" onclick="selectPatient('routine')" id="card-routine">
+                <div class="patient-name">Maria, 52 jaar</div>
+                <div class="patient-info">Jaarlijkse bloedcontrole</div>
+                <span class="patient-tag tag-routine">Routine check</span>
+            </div>
+            <div class="patient-card" onclick="selectPatient('diabetes')" id="card-diabetes">
+                <div class="patient-name">Ahmed, 64 jaar</div>
+                <div class="patient-info">Diabetes type 2 controle</div>
+                <span class="patient-tag tag-aandacht">Aandachtspunten</span>
+            </div>
+            <div class="patient-card" onclick="selectPatient('nier')" id="card-nier">
+                <div class="patient-name">Jan, 71 jaar</div>
+                <div class="patient-info">Nierfunctie controle</div>
+                <span class="patient-tag tag-afwijkend">Afwijkende waarden</span>
+            </div>
+            <div class="patient-card" onclick="selectPatient('schildklier')" id="card-schildklier">
+                <div class="patient-name">Lisa, 38 jaar</div>
+                <div class="patient-info">Schildklier + vermoeidheid</div>
+                <span class="patient-tag tag-controle">Nader onderzoek</span>
+            </div>
+        </div>
+    </div>
 
-<div class="results-panel" id="results-panel">
-<div class="view-toggle">
-<button class="toggle-btn active" id="btn-ai" onclick="toggleView('ai')">Begrijpelijke uitleg</button>
-<button class="toggle-btn" id="btn-original" onclick="toggleView('original')">Originele labwaarden</button>
-</div>
+    <div class="results-panel" id="results-panel">
 
-<div class="level-selector" id="level-selector">
-<div class="section-label" style="width: 100%; margin-bottom: 4px;">Taalniveau</div>
-<button class="level-btn active" onclick="setLevel('eenvoudig')">Eenvoudig (B1)</button>
-<button class="level-btn" onclick="setLevel('standaard')">Standaard (B2)</button>
-<button class="level-btn" onclick="setLevel('uitgebreid')">Uitgebreid (C1)</button>
-</div>
+        <div class="view-toggle">
+            <button class="toggle-btn active" id="btn-ai" onclick="toggleView('ai')">Begrijpelijke uitleg</button>
+            <button class="toggle-btn" id="btn-original" onclick="toggleView('original')">Originele labwaarden</button>
+        </div>
 
-<div class="typing-indicator" id="typing">
-<span class="typing-dot"></span>
-<span class="typing-dot"></span>
-<span class="typing-dot"></span>
-</div>
+        <div class="level-selector" id="level-selector">
+            <div class="section-label" style="width: 100%; margin-bottom: 4px;">Taalniveau</div>
+            <button class="level-btn active" onclick="setLevel('eenvoudig')">Eenvoudig (B1)</button>
+            <button class="level-btn" onclick="setLevel('standaard')">Standaard (B2)</button>
+            <button class="level-btn" onclick="setLevel('uitgebreid')">Uitgebreid (C1)</button>
+        </div>
 
-<div id="ai-view"></div>
-<div id="original-view" style="display:none;"></div>
+        <div class="typing-indicator" id="typing">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <br>
+            <span style="font-size: 13px; color: var(--text-secondary); margin-top: 8px; display: inline-block;">MedBegrip analyseert uw uitslagen...</span>
+        </div>
 
-<div class="chat-container" id="chat-container" style="display: none;">
-<div class="chat-header" onclick="toggleChat()">
-<div class="chat-header-icon">&#x1F4AC;</div>
-<div class="chat-header-text">
-<h4>Stel een vraag over uw uitslagen</h4>
-<span>MedBegrip AI beantwoordt uw vragen in eenvoudige taal</span>
-</div>
-<div class="chat-toggle-icon">&#x25BC;</div>
-</div>
-<div class="chat-body">
-<div class="chat-messages" id="chat-messages"></div>
-<div class="chat-suggestions" id="chat-suggestions"></div>
-<div class="chat-disclaimer">Dit is een AI-hulpmiddel dat uitslagen uitlegt in eenvoudige taal. Het stelt geen diagnoses en vervangt niet uw arts.</div>
-<div class="chat-input-bar">
-<input type="text" class="chat-input" id="chat-input" placeholder="Typ hier uw vraag..." onkeydown="if(event.key==='Enter')sendChatMessage()">
-<button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">&#x27A4;</button>
-</div>
-</div>
-</div>
-</div>
+        <div id="ai-view">
+            <!-- Filled by JS -->
+        </div>
 
-<div class="cta-section" id="cta" style="display: none;">
-<h3>Interesse in MedBegrip voor uw organisatie?</h3>
-<p>Wij helpen ziekenhuizen en huisartspraktijken om uitslagen begrijpelijk te maken voor elke patient.</p>
-<button class="cta-btn" onclick="alert('Neem contact op: enricogoossen@hotmail.com')">Neem contact op</button>
-</div>
+        <div id="original-view" style="display: none;">
+            <!-- Filled by JS -->
+        </div>
 
-<div class="footer">
-<p>MedBegrip Demo v2.0 — Concept voor begrijpelijke medische communicatie</p>
-<p style="margin-top:4px;">Dit is een demonstratie met fictieve patientgegevens. Niet voor medisch gebruik.</p>
-<p style="margin-top:4px; font-size: 11px; opacity: 0.7;">Conform EU AI Act Art. 52 — AI-gegenereerde content is als zodanig gemarkeerd.</p>
-</div>
-</div>
+    </div>
 
-<!-- Popup overlay + tooltip -->
-<div class="popup-overlay" id="popup-overlay" onclick="closePopup()"></div>
-<div class="term-popup" id="term-popup">
-<div class="term-popup-header">
-<span class="term-popup-title" id="popup-title"></span>
-<button class="term-popup-close" onclick="closePopup()">&#x2715;</button>
-</div>
-<div class="term-popup-explain" id="popup-explain"></div>
-<div class="term-popup-hint">Tik ergens anders om te sluiten</div>
+    <!-- Chat section -->
+    <div class="chat-section" id="chat-section">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <div class="ai-avatar">MB</div>
+                    <div>
+                        <h3>Stel een vraag over uw uitslagen</h3>
+                        <span>MedBegrip beantwoordt uw vragen in begrijpelijke taal</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-disclaimer">
+                <strong>Let op:</strong> MedBegrip geeft uitleg bij uw uitslagen, maar stelt geen diagnoses en vervangt niet het gesprek met uw arts. Bij twijfel of zorgen: neem altijd contact op met uw huisarts of specialist.
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages filled by JS -->
+            </div>
+            <div class="chat-typing" id="chat-typing">
+                <div class="chat-typing-dots"><span></span><span></span><span></span></div>
+                <span>MedBegrip typt...</span>
+            </div>
+            <div class="chat-suggestions" id="chat-suggestions">
+                <!-- Suggestions filled by JS -->
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Stel een vraag over uw uitslagen..." onkeydown="if(event.key==='Enter')sendChat()">
+                <button class="chat-send" id="chat-send" onclick="sendChat()">Verstuur</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-section" id="cta" style="display: none;">
+        <h3>Interesse in MedBegrip voor uw instelling?</h3>
+        <p>We integreren direct met uw EPD (Epic, HiX, ChipSoft) en passen het taalniveau automatisch aan per patient.</p>
+        <button class="cta-btn" onclick="alert('Neem contact op: enricogoossen@hotmail.com')">Neem contact op</button>
+    </div>
+
+    <div class="footer">
+        <p>MedBegrip Demo -- Prototype v1.0<br>
+        Dit is een demonstratie. Geen medisch advies. Raadpleeg altijd uw arts.<br>
+        &copy; 2025 Goossen IT Management Consulting</p>
+    </div>
+
 </div>
 
 <script>
-// === MEDISCH WOORDENBOEK ===
-const glossary = {
-    "hemoglobine": {
-        title: "Hemoglobine",
-        explain: "Een stof in je rode bloedcellen die zuurstof door je lichaam vervoert. Als het te laag is, krijgt je lichaam te weinig zuurstof. Dan voel je je moe, duizelig of kortademig."
-    },
-    "glucose": {
-        title: "Glucose (bloedsuiker)",
-        explain: "Suiker in je bloed. Je lichaam gebruikt dit als brandstof voor energie. Te veel suiker beschadigt op den duur je bloedvaten en organen."
-    },
-    "cholesterol": {
-        title: "Cholesterol",
-        explain: "Een vetachtige stof in je bloed. Een beetje is goed en nodig, maar te veel kan je bloedvaten dichtslibben. Dat vergroot de kans op een hartaanval of beroerte."
-    },
-    "hdl": {
-        title: "HDL (goed cholesterol)",
-        explain: "Dit is het 'goede' cholesterol. Het ruimt juist vet op uit je bloedvaten en brengt het naar je lever om af te breken. Hoe meer HDL, hoe beter."
-    },
-    "ldl": {
-        title: "LDL (slecht cholesterol)",
-        explain: "Dit is het 'slechte' cholesterol. Het kan zich ophopen aan de binnenkant van je bloedvaten en ze steeds nauwer maken. Dat is gevaarlijk voor je hart."
-    },
-    "triglyceriden": {
-        title: "Triglyceriden",
-        explain: "Een soort vet in je bloed. Als je meer calorieeen eet dan je lichaam nodig heeft, maakt je lichaam hier triglyceriden van. Te veel verhoogt het risico op hartproblemen."
-    },
-    "tsh": {
-        title: "TSH",
-        explain: "Een stof uit je hersenen die je schildklier aanstuurt. Als TSH hoog is, probeert je lichaam de schildklier harder te laten werken, maar lukt dat niet. Dat betekent dat je schildklier te langzaam werkt."
-    },
-    "kreatinine": {
-        title: "Kreatinine",
-        explain: "Een afvalstof die vrijkomt uit je spieren. Je nieren ruimen dit op. Als er te veel kreatinine in je bloed zit, kan dat betekenen dat je nieren minder goed werken."
-    },
-    "hba1c": {
-        title: "HbA1c (langetermijn bloedsuiker)",
-        explain: "Dit getal laat zien hoe hoog je bloedsuiker gemiddeld was in de afgelopen 3 maanden. Het is anders dan een losse suikermeting: het geeft een beeld over langere tijd. Belangrijk voor mensen met diabetes."
-    },
-    "egfr": {
-        title: "eGFR (nierfunctie)",
-        explain: "Een getal dat aangeeft hoe goed je nieren werken. Hoe hoger, hoe beter. Boven de 90 is normaal, onder de 60 betekent dat je nieren minder goed filteren."
-    },
-    "albumine": {
-        title: "Albumine",
-        explain: "Een eiwit in je bloed dat gemaakt wordt door je lever. Het zegt iets over hoe goed je gevoed bent. Als het te laag is, kan dat betekenen dat je te weinig eiwitten eet of dat je lichaam eiwit verliest."
-    },
-    "kalium": {
-        title: "Kalium",
-        explain: "Een mineraal in je bloed dat heel belangrijk is voor je hart. Het zorgt dat je hart in een goed ritme klopt. Te veel of te weinig kalium kan gevaarlijk zijn voor je hartritme."
-    },
-    "fosfaat": {
-        title: "Fosfaat",
-        explain: "Een mineraal voor sterke botten en tanden. Normaal houden je nieren dit in balans. Als je nieren minder goed werken, kan fosfaat zich ophopen in je bloed."
-    },
-    "calcium": {
-        title: "Calcium",
-        explain: "Een mineraal dat nodig is voor sterke botten, maar ook voor je spieren en zenuwen. Als het te laag is, kun je last krijgen van spierkrampen of tintelingen."
-    },
-    "ureum": {
-        title: "Ureum",
-        explain: "Een afvalstof die ontstaat als je lichaam eiwitten (uit voeding) verwerkt. Je nieren ruimen dit op via je urine. Als het te hoog is in je bloed, werken je nieren waarschijnlijk minder goed."
-    },
-    "ferritine": {
-        title: "Ferritine (ijzervoorraad)",
-        explain: "Dit laat zien hoeveel ijzer je lichaam in voorraad heeft. IJzer is nodig om rode bloedcellen te maken. Als je ferritine laag is, raakt je ijzervoorraad op en kun je bloedarmoede krijgen."
-    },
-    "vitamine d": {
-        title: "Vitamine D",
-        explain: "Een vitamine die je lichaam aanmaakt door zonlicht op je huid. Het is nodig voor sterke botten en een goed werkend afweersysteem. In Nederland hebben veel mensen een tekort, vooral in de winter."
-    },
-    "anti-tpo": {
-        title: "Anti-TPO (antistoffen)",
-        explain: "Dit zijn deeltjes van je afweersysteem die per ongeluk je eigen schildklier aanvallen. Als dit getal hoog is, valt je lichaam zijn eigen schildklier aan. Dit heet de ziekte van Hashimoto."
-    },
-    "vrij t4": {
-        title: "Vrij T4 (schildklierhormoon)",
-        explain: "Het hormoon dat je schildklier maakt. Dit regelt hoe snel je stofwisseling werkt. Als T4 te laag is, werkt alles langzamer: je wordt moe, je komt aan, en je kunt het koud hebben."
-    },
-    "bloeddruk": {
-        title: "Bloeddruk",
-        explain: "De druk waarmee je hart bloed door je lichaam pompt. Het eerste getal (bovendruk) is de druk als je hart knijpt, het tweede (onderdruk) als je hart ontspant. Te hoog is slecht voor je hart, nieren en bloedvaten."
-    },
-    "albumine/kreatinine ratio": {
-        title: "Albumine/Kreatinine Ratio",
-        explain: "Dit meet of er eiwit lekt via je urine. Normaal houden je nieren eiwit tegen. Als er wel eiwit in je urine zit, is dat een vroeg signaal dat je nieren het zwaarder hebben."
-    },
-    "hypothyreoïdie": {
-        title: "Hypothyreoïdie (trage schildklier)",
-        explain: "Je schildklier werkt te langzaam en maakt te weinig hormoon aan. Hierdoor gaat je stofwisseling langzamer. Je wordt moe, komt aan, kunt het koud hebben, en je huid en haar worden droger."
-    },
-    "hashimoto": {
-        title: "Ziekte van Hashimoto",
-        explain: "Een aandoening waarbij je afweersysteem per ongeluk je eigen schildklier beschadigt. Hierdoor gaat je schildklier steeds minder werken. Het is de meest voorkomende oorzaak van een trage schildklier. Het is goed behandelbaar met een dagelijks tabletje."
-    },
-    "nefroloog": {
-        title: "Nefroloog",
-        explain: "Een arts die gespecialiseerd is in nierziekten. Als je nieren minder goed werken, word je doorverwezen naar een nefroloog voor behandeling en controle."
-    },
-    "epo": {
-        title: "EPO",
-        explain: "Een stof die je nieren aanmaken. Het geeft je beenmerg (in je botten) het signaal om nieuwe rode bloedcellen te maken. Als je nieren minder EPO maken, krijg je minder rode bloedcellen en word je bloedarmoede."
-    },
-    "bloedarmoede": {
-        title: "Bloedarmoede",
-        explain: "Je hebt te weinig rode bloedcellen of hemoglobine in je bloed. Hierdoor krijgt je lichaam minder zuurstof. Je voelt je moe, slap, duizelig, en kunt bleek zien."
-    },
-    "nierfunctie": {
-        title: "Nierfunctie",
-        explain: "Hoe goed je nieren werken. Je nieren filteren afvalstoffen en overtollig vocht uit je bloed en maken daar urine van. Als je nierfunctie verminderd is, blijven afvalstoffen achter in je bloed."
-    },
-    "stofwisseling": {
-        title: "Stofwisseling",
-        explain: "Alle processen in je lichaam die voedsel omzetten in energie. Als je stofwisseling langzaam is (door bijv. een trage schildklier), verbrand je minder en kom je aan."
-    },
-    "chronische nierschade": {
-        title: "Chronische nierschade",
-        explain: "Je nieren zijn blijvend beschadigd en werken minder goed. Dit gaat meestal heel langzaam, over jaren. Met medicijnen en aanpassingen in voeding kun je het vaak stabiel houden."
-    },
-    "nuchtere glucose": {
-        title: "Nuchtere glucose",
-        explain: "Je bloedsuiker gemeten als je minimaal 8 uur niet hebt gegeten. Dit geeft het zuiverste beeld van je bloedsuiker in rust."
-    },
-    "voorbeeld": {
-        title: "Klikbare medische termen",
-        explain: "Overal in de uitleg zie je woorden met een stippellijn eronder. Als je daar op tikt, krijg je een korte uitleg in heel eenvoudige taal. Zo hoef je nooit te gokken wat iets betekent!"
-    }
-};
-
-// === PATIENT DATA (vereenvoudigd - geen "stadium 3b" etc.) ===
 const patientData = {
     routine: {
         name: "Maria van den Berg",
@@ -1051,28 +953,50 @@ const patientData = {
                     type: "good",
                     title: "Bloedbeeld en suiker: prima in orde",
                     value: "Hemoglobine 8.2 mmol/L | Glucose 5.4 mmol/L",
-                    explain: "Uw {hemoglobine} is goed. Dat betekent dat uw bloed genoeg rode bloedcellen heeft om zuurstof te vervoeren. Uw {glucose} is ook normaal. Uw lichaam verwerkt suiker goed."
+                    explain: "Uw bloedwaarden zijn goed. De hemoglobine laat zien dat uw bloed genoeg rode bloedcellen heeft om zuurstof te vervoeren. Uw bloedsuiker is normaal, wat betekent dat uw lichaam suiker goed verwerkt."
                 },
                 {
                     type: "attention",
                     title: "Cholesterol: iets te hoog",
                     value: "Totaal cholesterol 6.8 mmol/L (streefwaarde: onder 5.0) | LDL 4.2 mmol/L (streefwaarde: onder 3.0)",
-                    explain: "Uw {cholesterol} is verhoogd. Er zijn twee soorten: {HDL} (het goede) en {LDL} (het slechte). Uw HDL is prima, maar uw LDL is te hoog. Te veel LDL kan zich ophopen in uw bloedvaten. Dat is niet acuut gevaarlijk, maar wel iets om aan te werken."
+                    explain: "Uw cholesterol is verhoogd. Cholesterol is een vetachtige stof in uw bloed. Er zijn twee soorten: HDL ('goede' cholesterol) en LDL ('slechte' cholesterol). Uw HDL is goed, maar uw LDL is te hoog. Te veel LDL kan zich ophopen in uw bloedvaten, waardoor het risico op hart- en vaatziekten toeneemt. Dit is niet acuut gevaarlijk, maar wel iets om aan te werken."
                 },
                 {
                     type: "good",
                     title: "Schildklier en nieren: normaal",
                     value: "TSH 2.1 mU/L | Kreatinine 72 umol/L",
-                    explain: "Uw schildklier werkt goed ({TSH} is normaal) en uw nieren filteren uw bloed prima ({kreatinine} is normaal). Hier hoeft u niets voor te doen."
+                    explain: "Uw schildklier werkt goed en uw nieren filteren uw bloed prima. Hier is geen actie voor nodig."
                 }
             ],
-            summary: "De meeste uitslagen zijn goed. Het enige aandachtspunt is uw {cholesterol}. Dit is iets dat u samen met uw huisarts kunt bespreken. Vaak helpen kleine aanpassingen in voeding en beweging al.",
+            summary: "De meeste uitslagen zijn goed. Het enige aandachtspunt is uw cholesterol. Dit is iets dat u samen met uw huisarts kunt bespreken. Vaak helpen kleine aanpassingen in voeding en beweging al.",
             actions: [
                 "Bespreek het cholesterol met uw huisarts bij de volgende afspraak",
                 "Voedingsadvies: minder verzadigd vet (boter, kaas, vettig vlees), meer vis, noten en groente",
-                "Regelmatig bewegen helpt om LDL te verlagen — al 30 minuten wandelen per dag maakt verschil"
+                "Regelmatig bewegen helpt om LDL te verlagen -- al 30 minuten wandelen per dag maakt verschil"
             ]
-        }
+        },
+        chatQA: [
+            {
+                keywords: ["cholesterol", "te hoog", "verhoogd", "gevaarlijk"],
+                question: "Is mijn cholesterol gevaarlijk?",
+                answer: "Uw totaal cholesterol is 6.8 mmol/L, dat is boven de streefwaarde van 5.0. Uw LDL (de 'slechte' cholesterol) is 4.2, terwijl onder 3.0 gewenst is. Dit is niet acuut gevaarlijk, maar op de lange termijn verhoogt het uw risico op hart- en vaatziekten. Het goede nieuws: uw HDL (de 'goede' cholesterol) is prima, en met aanpassingen in voeding en beweging kunt u het LDL vaak verlagen. Uw huisarts kan dit met u bespreken."
+            },
+            {
+                keywords: ["wat kan ik doen", "verlagen", "voeding", "dieet", "eten"],
+                question: "Wat kan ik doen om mijn cholesterol te verlagen?",
+                answer: "Er zijn bewezen effectieve aanpassingen: verminder verzadigd vet (boter, kaas, vettig vlees, koek), eet meer onverzadigde vetten (olijfolie, noten, vette vis), eet meer vezels (groente, fruit, volkoren producten), en beweeg minimaal 30 minuten per dag. Bij sommige patienten is een cholesterolverlager (statine) nodig. Uw huisarts beoordeelt dit op basis van uw totale risicoprofiel."
+            },
+            {
+                keywords: ["medicijn", "statine", "pil", "medicatie"],
+                question: "Heb ik medicijnen nodig?",
+                answer: "Dat hangt af van uw totale risicoprofiel. Uw huisarts kijkt niet alleen naar het cholesterol, maar ook naar andere factoren zoals leeftijd, bloeddruk, roken en familiegeschiedenis. Bij een licht verhoogd cholesterol zonder andere risicofactoren is leefstijlaanpassing vaak voldoende. Als dat niet genoeg helpt, kan uw arts een statine voorschrijven. Dit is een veelgebruikt en veilig medicijn."
+            },
+            {
+                keywords: ["schildklier", "tsh", "normaal"],
+                question: "Hoe staat het met mijn schildklier?",
+                answer: "Uw TSH is 2.1 mU/L, dat valt keurig binnen de normaalwaarden van 0.4 tot 4.0. Dit betekent dat uw schildklier goed werkt en de juiste hoeveelheid hormonen aanmaakt. Hier is geen actie voor nodig."
+            }
+        ]
     },
     diabetes: {
         name: "Ahmed Yilmaz",
@@ -1094,42 +1018,64 @@ const patientData = {
             results: [
                 {
                     type: "attention",
-                    title: "Bloedsuiker over 3 maanden: iets te hoog",
+                    title: "Langetermijn bloedsuiker (HbA1c): iets te hoog",
                     value: "HbA1c: 58 mmol/mol (streefwaarde: onder 53)",
-                    explain: "Uw {HbA1c} laat zien hoe hoog uw bloedsuiker gemiddeld was over de afgelopen 3 maanden. Uw waarde van 58 is iets boven de streefwaarde van 53. Dat betekent dat uw diabetes de afgelopen periode niet helemaal goed onder controle was. Uw {nuchtere glucose} van 8.9 bevestigt dit: die is ook iets te hoog."
+                    explain: "Het HbA1c laat zien hoe hoog uw bloedsuiker gemiddeld was over de afgelopen 3 maanden. Uw waarde van 58 is iets boven de streefwaarde. Dit betekent dat uw diabetes op dit moment niet optimaal gereguleerd is. Uw diabetesverpleegkundige kan met u kijken of uw medicatie of voeding aangepast moet worden."
                 },
                 {
                     type: "attention",
                     title: "Eiwit in urine: licht verhoogd",
                     value: "Albumine/kreatinine ratio: 4.2 mg/mmol (streefwaarde: onder 3.5)",
-                    explain: "Er zit een klein beetje eiwit in uw urine. Normaal houden uw nieren eiwit tegen, maar bij diabetes kan dit gaan lekken. Dit is een vroeg signaal dat uw nieren iets harder moeten werken. Uw {nierfunctie} zelf ({eGFR} 68) is nog goed genoeg, maar we willen voorkomen dat dit achteruitgaat."
+                    explain: "Er zit een klein beetje eiwit in uw urine. Normaal houden uw nieren eiwit tegen, maar bij diabetes kan dit lekken. Dit is een vroeg signaal dat uw nieren iets harder moeten werken. Uw nierfunctie zelf (eGFR 68) is nog redelijk, maar we willen voorkomen dat dit verder achteruitgaat."
                 },
                 {
                     type: "attention",
                     title: "Bloeddruk: te hoog",
                     value: "148/92 mmHg (streefwaarde: onder 140/80)",
-                    explain: "Uw {bloeddruk} is te hoog. Bij diabetes is een goede bloeddruk extra belangrijk. Hoge bloeddruk samen met hoge bloedsuiker vergroot de kans op schade aan uw nieren, ogen en hart."
+                    explain: "Uw bloeddruk is te hoog. Bij diabetes is een goede bloeddruk extra belangrijk, omdat hoge bloeddruk samen met hoge bloedsuiker de kans op nierschade en hart- en vaatziekten vergroot."
                 },
                 {
                     type: "good",
                     title: "Cholesterol en kalium: goed",
                     value: "Cholesterol 4.8 mmol/L | Kalium 4.6 mmol/L",
-                    explain: "Uw {cholesterol} is netjes onder de norm en uw {kalium} is goed. De cholesterolverlager die u gebruikt doet zijn werk."
+                    explain: "Uw cholesterol is netjes binnen de norm en uw kalium is goed. De cholesterolverlager die u gebruikt doet zijn werk."
                 }
             ],
-            summary: "Er zijn drie punten om met uw arts te bespreken: uw bloedsuiker is iets te hoog, er zit een klein beetje eiwit in uw urine, en uw {bloeddruk} is verhoogd. Deze drie dingen hangen bij diabetes met elkaar samen. Het goede nieuws: het is allemaal licht verhoogd en goed behandelbaar.",
+            summary: "Er zijn drie punten om met uw arts te bespreken: uw bloedsuiker is iets te hoog, er zit een klein beetje eiwit in uw urine, en uw bloeddruk is verhoogd. Deze drie dingen hangen bij diabetes met elkaar samen. Het goede nieuws: het is allemaal licht verhoogd en goed behandelbaar.",
             actions: [
                 "Maak een afspraak met uw diabetesverpleegkundige om uw medicatie te bespreken",
-                "Bloedsuiker verlagen: regelmatig eten op vaste tijden, minder snelle suikers (wit brood, frisdrank, snoep)",
+                "Het HbA1c kan dalen door regelmatig eten op vaste tijden en minder snelle suikers",
                 "Bloeddruk verlagen: minder zout, dagelijks bewegen, en eventueel medicatie-aanpassing",
                 "De arts zal over 3 maanden opnieuw bloed en urine controleren"
             ]
-        }
+        },
+        chatQA: [
+            {
+                keywords: ["hba1c", "bloedsuiker", "te hoog", "suiker", "58"],
+                question: "Wat betekent een HbA1c van 58?",
+                answer: "Uw HbA1c van 58 mmol/mol betekent dat uw gemiddelde bloedsuiker over de afgelopen 3 maanden iets te hoog is geweest. De streefwaarde bij diabetes type 2 is onder de 53. Een verschil van 5 punten is niet alarmerend, maar het is wel een signaal om met uw diabetesverpleegkundige te kijken naar uw medicatie en voeding. Door regelmatig op vaste tijden te eten en snelle suikers te beperken, kunt u dit vaak verbeteren."
+            },
+            {
+                keywords: ["eiwit", "urine", "nieren", "albumine", "nierschade"],
+                question: "Is het eiwit in mijn urine een probleem?",
+                answer: "Er zit een klein beetje eiwit in uw urine (albumine/kreatinine ratio 4.2, normaal onder 3.5). Dit is een vroeg waarschuwingssignaal dat uw nieren iets harder moeten werken dan normaal. Bij diabetes kan hoge bloedsuiker de kleine bloedvaten in de nieren beschadigen, waardoor eiwit doorlekt. Uw nierfunctie zelf (eGFR 68) is nog redelijk. Door uw bloedsuiker en bloeddruk goed te reguleren, kunt u verdere achteruitgang voorkomen. Uw arts zal dit regelmatig controleren."
+            },
+            {
+                keywords: ["bloeddruk", "hoog", "verlagen"],
+                question: "Hoe kan ik mijn bloeddruk verlagen?",
+                answer: "Uw bloeddruk van 148/92 is te hoog (streefwaarde: onder 140/80). Bij diabetes is een goede bloeddruk extra belangrijk om uw nieren en bloedvaten te beschermen. Wat u kunt doen: minder zout eten (max 6 gram per dag), dagelijks 30 minuten bewegen, eventueel afvallen als dat van toepassing is, en alcohol matigen. Als leefstijlaanpassingen niet voldoende helpen, kan uw arts bloeddrukmedicatie voorschrijven of aanpassen."
+            },
+            {
+                keywords: ["medicijn", "medicatie", "insulin", "metformine"],
+                question: "Moet mijn medicatie worden aangepast?",
+                answer: "Dat is een vraag die uw diabetesverpleegkundige of huisarts het best kan beantwoorden. Op basis van uw uitslagen (HbA1c 58, verhoogde bloeddruk, licht eiwit in urine) is het waarschijnlijk dat uw arts wil kijken of aanpassing nodig is. Maak hiervoor een afspraak. Neem in de tussentijd uw huidige medicijnen gewoon in zoals voorgeschreven."
+            }
+        ]
     },
     nier: {
         name: "Jan de Vries",
         age: 71,
-        context: "Controle bij de nierspecialist",
+        context: "Controle na eerder vastgestelde nierfunctievermindering",
         date: "18 januari 2025",
         lab: [
             { test: "Kreatinine", value: "156", unit: "umol/L", ref: "60 - 110", status: "high" },
@@ -1146,37 +1092,59 @@ const patientData = {
             results: [
                 {
                     type: "alert",
-                    title: "Nieren werken op 38% van normaal",
+                    title: "Nierfunctie: duidelijk verminderd",
                     value: "eGFR: 38 mL/min (normaal: boven 60) | Kreatinine: 156 umol/L (normaal: 60-110)",
-                    explain: "Uw nieren werken op dit moment op ongeveer 38% van hun normale kracht. De nieren zijn de filters van uw lichaam: ze zuiveren uw bloed en voeren afvalstoffen af. De hoge {kreatinine} en {ureum} laten zien dat er meer afvalstoffen in uw bloed achterblijven dan normaal. Dit is bij u al bekend en u bent hiervoor onder behandeling bij een {nefroloog}."
+                    explain: "Uw nieren werken op dit moment op ongeveer 38% van hun normale capaciteit. De nieren zijn de filters van uw lichaam: ze zuiveren uw bloed en voeren afvalstoffen af via urine. De hoge kreatinine en ureum laten zien dat er meer afvalstoffen in uw bloed achterblijven dan normaal. Dit past bij stadium 3b van chronische nierschade, wat uw nefroloog al eerder heeft vastgesteld."
                 },
                 {
                     type: "alert",
-                    title: "Kalium: verhoogd — belangrijk",
+                    title: "Kalium: verhoogd -- belangrijk",
                     value: "Kalium: 5.4 mmol/L (normaal: 3.5 - 5.0)",
-                    explain: "Uw {kalium} is iets te hoog. Kalium is heel belangrijk voor uw hartritme. Normaal voeren uw nieren overtollig kalium af, maar als de nieren minder goed werken kan kalium zich ophopen. Een kalium boven 5.5 kan gevaarlijk zijn voor uw hart. U zit daar net onder, maar dit moet goed in de gaten gehouden worden."
+                    explain: "Uw kalium is iets te hoog. Kalium is een mineraal dat belangrijk is voor uw hartritme. Normaal voeren uw nieren overtollig kalium af, maar als de nieren minder goed werken kan kalium ophopen. Een kalium boven 5.5 kan gevaarlijk zijn voor uw hart. U zit daar net onder, maar dit moet goed in de gaten gehouden worden."
                 },
                 {
                     type: "attention",
-                    title: "Bloedarmoede en mineralen uit balans",
+                    title: "Bloedarmoede en mineralen verstoord",
                     value: "Hemoglobine: 6.8 mmol/L (normaal: 8.5-11.0) | Calcium: 2.18 | Fosfaat: 1.62",
-                    explain: "U heeft {bloedarmoede}: uw {hemoglobine} is te laag. Dit komt doordat uw nieren minder {EPO} aanmaken — een stof die uw lichaam nodig heeft om rode bloedcellen te maken. Daarnaast zijn uw {calcium} en {fosfaat} uit balans. Dit hangt ook samen met de nieren, die vitamine D helpen om te werken."
+                    explain: "U heeft bloedarmoede: uw hemoglobine is te laag. Bij verminderde nierfunctie maken de nieren minder erytropoetine aan, een hormoon dat nodig is om rode bloedcellen te maken. Ook zijn uw calcium en fosfaat uit balans, wat op den duur uw botten kan verzwakken. Uw nefroloog zal dit behandelen."
                 },
                 {
                     type: "attention",
                     title: "Albumine: te laag",
                     value: "Albumine: 32 g/L (normaal: 35-50)",
-                    explain: "Uw {albumine} is te laag. Dit eiwit zegt iets over uw voedingstoestand. Een lage waarde kan betekenen dat u te weinig eiwitten binnenkrijgt, of dat uw lichaam eiwit verliest via de urine. Uw arts zal kijken of uw voeding aangepast moet worden."
+                    explain: "Albumine is een eiwit in uw bloed dat belangrijk is voor uw voedingstoestand. Een lage waarde kan betekenen dat u te weinig eiwitten binnenkrijgt, of dat uw lichaam eiwit verliest via de urine. Uw arts zal kijken of uw voeding aangepast moet worden."
                 }
             ],
-            summary: "Uw nieren werken op ongeveer 38% van hun kracht. Dit was al bekend. Hierdoor hopen afvalstoffen op, raken mineralen uit balans, en maakt uw lichaam te weinig rode bloedcellen. Het belangrijkste aandachtspunt vandaag is uw {kalium}, dat aan de hoge kant zit. Bespreek dit met uw {nefroloog}.",
+            summary: "Uw nierfunctie is verminderd (stadium 3b) en dit veroorzaakt een keten van effecten: ophoping van afvalstoffen, verstoorde mineralen, en bloedarmoede. Dit is bij u al bekend en u bent onder behandeling bij een nefroloog. De uitslagen van vandaag moeten met uw specialist besproken worden, vooral het kalium dat aan de hoge kant zit.",
             actions: [
-                "Bel de nierspecialist of het secretariaat om de uitslagen te bespreken (vooral het kalium)",
+                "Bel de nefroloog of het secretariaat om de uitslagen te bespreken (vooral het kalium)",
                 "Vermijd kaliumrijke voeding totdat u uw arts heeft gesproken (bananen, tomaten, aardappelen, chocolade)",
-                "Neem uw medicijnen in zoals voorgeschreven — sla geen dosis over",
+                "Neem uw medicijnen in zoals voorgeschreven -- sla geen dosis over",
                 "De arts zal waarschijnlijk over 4-6 weken opnieuw bloed laten prikken"
             ]
-        }
+        },
+        chatQA: [
+            {
+                keywords: ["kalium", "gevaarlijk", "hart", "hoog", "5.4"],
+                question: "Is mijn kalium gevaarlijk hoog?",
+                answer: "Uw kalium is 5.4 mmol/L, net boven de bovengrens van 5.0. Boven 5.5 kan kalium gevaarlijk worden voor uw hartritme. U zit daar net onder, maar het is een waarde die goed bewaakt moet worden. Eet tot uw volgende afspraak voorzichtig met kaliumrijke voeding zoals bananen, tomaten, aardappelen, chocolade en noten. Neem zo snel mogelijk contact op met uw nefroloog om dit te bespreken."
+            },
+            {
+                keywords: ["nierfunctie", "egfr", "38", "stadium", "erger", "achteruit"],
+                question: "Gaat mijn nierfunctie nog verder achteruit?",
+                answer: "Uw eGFR is 38 mL/min, wat past bij stadium 3b chronische nierschade. Het verloop verschilt per patient. Bij sommigen stabiliseert de nierfunctie, bij anderen gaat het langzaam achteruit. Door uw bloeddruk goed te reguleren, zoutarm te eten, voldoende te drinken en uw medicijnen trouw in te nemen, kunt u de achteruitgang vaak vertragen. Uw nefroloog volgt dit nauwkeurig via regelmatige bloedcontroles."
+            },
+            {
+                keywords: ["bloedarmoede", "moe", "hemoglobine", "vermoeid"],
+                question: "Waarom heb ik bloedarmoede?",
+                answer: "Uw hemoglobine is 6.8 mmol/L, onder de norm van 8.5-11.0. Bij verminderde nierfunctie maken uw nieren minder erytropoetine (EPO) aan. Dit hormoon stimuleert de aanmaak van rode bloedcellen in het beenmerg. Minder EPO betekent minder rode bloedcellen, en daardoor minder zuurstofvervoer door uw lichaam. Dit verklaart vermoeidheid en een verminderd uithoudingsvermogen. Uw nefroloog kan een EPO-injectie of ijzersupplement voorschrijven."
+            },
+            {
+                keywords: ["eten", "dieet", "voeding", "wat mag ik"],
+                question: "Wat moet ik letten op met eten?",
+                answer: "Bij verminderde nierfunctie is voeding belangrijk. Beperk kaliumrijke voeding (bananen, tomaten, aardappelen, chocolade, noten). Eet niet te veel eiwit, maar ook niet te weinig (uw albumine is al aan de lage kant). Gebruik weinig zout (max 5-6 gram per dag). Beperk fosfaatrijke producten (cola, bewerkt vlees, smeltkaas). Drink voldoende, maar niet overdreven veel. Een dieetadvies op maat van een nierdieetist is sterk aan te raden. Vraag uw nefroloog om een verwijzing."
+            }
+        ]
     },
     schildklier: {
         name: "Lisa Bakker",
@@ -1198,164 +1166,119 @@ const patientData = {
             results: [
                 {
                     type: "alert",
-                    title: "Schildklier werkt te langzaam",
+                    title: "Schildklier: te traag (hypothyreodie)",
                     value: "TSH: 8.7 mU/L (normaal: 0.4-4.0) | Vrij T4: 9.2 pmol/L (normaal: 11-22) | Anti-TPO: 312 kU/L (normaal: onder 35)",
-                    explain: "Uw schildklier werkt te langzaam. De schildklier is een klein orgaan in uw hals dat hormonen maakt die uw {stofwisseling} regelen. Uw schildklierhormoon ({vrij T4}) is te laag, en het aansturingshormoon ({TSH}) is te hoog — uw lichaam probeert de schildklier harder te laten werken, maar dat lukt niet. De hoge {Anti-TPO} waarde laat zien dat uw afweersysteem de schildklier aanvalt. Dit heet de ziekte van {Hashimoto}. Dit verklaart uw vermoeidheid, gewichtstoename en kouwelijkheid."
+                    explain: "Uw schildklier werkt te langzaam. De schildklier is een klein orgaan in uw hals dat hormonen maakt die uw stofwisseling regelen. Bij u is het schildklierhormoon (T4) te laag, en het aansturingshormoon (TSH) te hoog -- uw lichaam probeert de schildklier harder te laten werken, maar dat lukt niet. De hoge Anti-TPO waarde laat zien dat uw afweersysteem de schildklier aanvalt. Dit heet de ziekte van Hashimoto, de meest voorkomende oorzaak van een trage schildklier. Dit verklaart uw vermoeidheid, gewichtstoename en mogelijk ook het koud hebben."
                 },
                 {
                     type: "attention",
                     title: "IJzertekort en lichte bloedarmoede",
                     value: "Ferritine: 12 ug/L (normaal: 20-200) | Hemoglobine: 7.4 mmol/L (normaal: 7.5-10.0)",
-                    explain: "Uw ijzervoorraad ({ferritine}) is te laag en uw {hemoglobine} zit net onder de grens. IJzer is nodig om rode bloedcellen te maken die zuurstof door uw lichaam vervoeren. Een tekort geeft extra vermoeidheid bovenop de schildklierklachten."
+                    explain: "Uw ijzervoorraad is te laag en uw hemoglobine zit net onder de grens. IJzer is nodig om rode bloedcellen te maken die zuurstof door uw lichaam vervoeren. Een tekort geeft extra vermoeidheid bovenop de schildklierklachten. Bij vrouwen is dit vaak het gevolg van menstruatie in combinatie met te weinig ijzer in de voeding."
                 },
                 {
                     type: "attention",
                     title: "Vitamine D: te laag",
                     value: "Vitamine D: 28 nmol/L (normaal: 50-125)",
-                    explain: "Uw {vitamine D} is te laag. Dit is nodig voor sterke botten en een goed werkend afweersysteem. Een tekort is heel gebruikelijk in Nederland, zeker in de wintermaanden."
+                    explain: "Uw vitamine D is flink te laag. Vitamine D is belangrijk voor uw botten, spieren en afweersysteem. Een tekort kan ook bijdragen aan vermoeidheid en somberheid. In Nederland is dit in de winter heel gebruikelijk, maar bij u is het wel duidelijk te laag."
                 },
                 {
                     type: "info",
-                    title: "Cholesterol: licht verhoogd (past bij schildklier)",
+                    title: "Cholesterol: iets verhoogd (past bij schildklier)",
                     value: "Cholesterol: 5.9 mmol/L (normaal: onder 5.0)",
-                    explain: "Uw {cholesterol} is licht verhoogd. Dit past bij een trage schildklier: als uw {stofwisseling} langzamer is, wordt cholesterol minder snel afgebroken. Dit zal waarschijnlijk vanzelf verbeteren zodra u behandeld wordt voor uw schildklier."
+                    explain: "Uw cholesterol is licht verhoogd. Dit past bij een trage schildklier: als de stofwisseling trager is, wordt cholesterol minder snel afgebroken. Zodra uw schildklier wordt behandeld, zal het cholesterol waarschijnlijk vanzelf dalen."
                 }
             ],
-            summary: "Er is een duidelijke verklaring voor uw klachten: uw schildklier werkt te langzaam door de ziekte van {Hashimoto}. Daarnaast heeft u een ijzertekort en een vitamine D tekort, die de vermoeidheid verergeren. Het goede nieuws: dit is allemaal goed behandelbaar.",
+            summary: "Er is goed nieuws: er is een duidelijke verklaring voor uw klachten gevonden. U heeft de ziekte van Hashimoto (auto-immuun schildklierontsteking), een ijzertekort en een vitamine D-tekort. Deze drie samen verklaren uw vermoeidheid, gewichtstoename en andere klachten. Alle drie zijn goed behandelbaar.",
             actions: [
-                "Uw huisarts zal medicatie voorschrijven voor de schildklier (levothyroxine — een dagelijks tabletje)",
-                "IJzertekort aanvullen: de arts schrijft waarschijnlijk ijzertabletten voor",
-                "Vitamine D: een supplement van 25-50 microgram per dag, verkrijgbaar bij de drogist",
-                "Het cholesterol hoeft nu niet apart behandeld te worden — dat verbetert waarschijnlijk mee",
-                "Controle over 6-8 weken om te kijken of de medicatie goed werkt"
+                "Uw huisarts zal schildkliermedicatie voorschrijven (levothyroxine) -- dit is een tablet die u elke ochtend inneemt",
+                "Start met een ijzersupplement -- uw arts kan dit voorschrijven of adviseren",
+                "Start met vitamine D-supplement (gebruikelijk: 1000-2000 IE per dag in de winter)",
+                "Na 6-8 weken wordt uw bloed opnieuw gecontroleerd om te zien of de medicatie goed werkt",
+                "Het cholesterol hoeft nu niet apart behandeld te worden -- dat verbetert waarschijnlijk mee"
             ]
-        }
+        },
+        chatQA: [
+            {
+                keywords: ["hashimoto", "schildklier", "auto-immuun", "wat is"],
+                question: "Wat is de ziekte van Hashimoto?",
+                answer: "De ziekte van Hashimoto is een auto-immuunziekte waarbij uw eigen afweersysteem de schildklier aanvalt. Dit leidt tot een geleidelijke beschadiging van de schildklier, waardoor deze minder hormonen aanmaakt. Uw hoge Anti-TPO waarde (312, normaal onder 35) bevestigt deze diagnose. Het is de meest voorkomende oorzaak van een trage schildklier en komt vaker voor bij vrouwen. Het is goed behandelbaar met schildklierhormoon in tabletvorm (levothyroxine)."
+            },
+            {
+                keywords: ["levothyroxine", "medicijn", "bijwerking", "hoelang", "innemen"],
+                question: "Hoe werkt levothyroxine en hoe lang moet ik het gebruiken?",
+                answer: "Levothyroxine is een synthetische vorm van het schildklierhormoon T4. U neemt het als tablet elke ochtend op een lege maag in, minstens 30 minuten voor het ontbijt. Het aanvullen van het hormoon verhelpt de klachten: meer energie, minder gewichtstoename, beter humeur. De dosering wordt geleidelijk ingesteld op basis van bloedcontroles. Bij de ziekte van Hashimoto is de behandeling doorgaans levenslang, omdat de schildklier niet herstelt. De meeste patienten ervaren weinig tot geen bijwerkingen als de dosering goed is ingesteld."
+            },
+            {
+                keywords: ["ijzer", "ferritine", "supplement", "ijzertekort"],
+                question: "Hoe kan ik mijn ijzertekort aanpakken?",
+                answer: "Uw ferritine is 12 ug/L (normaal: 20-200), wat wijst op een lege ijzervoorraad. Uw arts kan een ijzertablet voorschrijven (bijv. ferrofumaraat). Neem dit in op een lege maag met een glas sinaasappelsap (vitamine C bevordert opname). Vermijd gelijktijdige inname met koffie, thee of zuivel (die remmen opname). IJzer kan maagklachten geven; neem het dan bij de maaltijd. Qua voeding: rood vlees, peulvruchten, donkergroene groenten en volkoren producten zijn goede bronnen. Na 3 maanden wordt uw bloed opnieuw gecontroleerd."
+            },
+            {
+                keywords: ["vitamine d", "supplement", "hoeveel", "zon"],
+                question: "Hoeveel vitamine D moet ik innemen?",
+                answer: "Uw vitamine D is 28 nmol/L, terwijl minimaal 50 gewenst is. Het gebruikelijke advies is 1000-2000 IE vitamine D per dag, zeker in de wintermaanden (oktober-maart) wanneer de zon in Nederland te laag staat voor vitamine D-productie in de huid. U kunt vitamine D als druppels of tabletten kopen bij de apotheek of drogist, zonder recept. In de zomer helpt het om dagelijks 15-30 minuten buitenshuis te zijn met ontblote onderarmen. Na 3 maanden wordt uw bloed opnieuw gecontroleerd."
+            }
+        ]
     }
 };
 
-// === STATE ===
 let currentPatient = null;
 let currentView = 'ai';
 let currentLevel = 'eenvoudig';
 
-// === TERM PROCESSING ===
-function processTerms(text) {
-    // Replace {term} with clickable spans
-    return text.replace(/\{([^}]+)\}/g, function(match, term) {
-        const termLower = term.toLowerCase();
-        const termKey = Object.keys(glossary).find(k =>
-            k === termLower ||
-            termLower.includes(k) ||
-            k.includes(termLower)
-        );
-        if (termKey) {
-            return '<span class="med-term" data-term="' + termKey + '" onclick="showTermPopup(event, \'' + termKey + '\')">' + term + '</span>';
-        }
-        return term;
-    });
-}
-
-// === POPUP SYSTEM ===
-function showTermPopup(event, termKey) {
-    event.stopPropagation();
-    const term = glossary[termKey];
-    if (!term) return;
-
-    const popup = document.getElementById('term-popup');
-    const overlay = document.getElementById('popup-overlay');
-    const title = document.getElementById('popup-title');
-    const explain = document.getElementById('popup-explain');
-
-    title.textContent = term.title;
-    explain.textContent = term.explain;
-
-    overlay.classList.add('visible');
-    popup.classList.add('visible');
-
-    // Position popup near the clicked term
-    const rect = event.target.getBoundingClientRect();
-    const popupWidth = 300;
-    const viewportW = window.innerWidth;
-    const viewportH = window.innerHeight;
-
-    let left = rect.left + (rect.width / 2) - (popupWidth / 2);
-    let top = rect.bottom + 10;
-
-    // Keep within viewport
-    if (left < 10) left = 10;
-    if (left + popupWidth > viewportW - 10) left = viewportW - popupWidth - 10;
-    if (top + 200 > viewportH) {
-        top = rect.top - 10;
-        popup.style.transform = 'translateY(-100%)';
-    } else {
-        popup.style.transform = 'none';
-    }
-
-    popup.style.left = left + 'px';
-    popup.style.top = top + 'px';
-}
-
-function closePopup() {
-    document.getElementById('term-popup').classList.remove('visible');
-    document.getElementById('popup-overlay').classList.remove('visible');
-}
-
-// === PATIENT SELECTION ===
 function selectPatient(id) {
-    currentPatient = id;
-
     document.querySelectorAll('.patient-card').forEach(c => c.classList.remove('active'));
     document.getElementById('card-' + id).classList.add('active');
 
+    currentPatient = id;
     const panel = document.getElementById('results-panel');
-    panel.classList.add('visible');
-
-    // Typing animation
     const typing = document.getElementById('typing');
     const aiView = document.getElementById('ai-view');
     const origView = document.getElementById('original-view');
     const cta = document.getElementById('cta');
+    const chatSection = document.getElementById('chat-section');
 
+    panel.classList.add('visible');
+
+    typing.classList.add('visible');
     aiView.innerHTML = '';
     origView.innerHTML = '';
-    origView.style.display = 'none';
-    typing.classList.add('active');
+    cta.style.display = 'none';
+    chatSection.classList.remove('visible');
 
     currentView = 'ai';
     document.getElementById('btn-ai').classList.add('active');
     document.getElementById('btn-original').classList.remove('active');
+    document.getElementById('ai-view').style.display = 'block';
+    document.getElementById('original-view').style.display = 'none';
     document.getElementById('level-selector').style.display = 'flex';
 
-    setTimeout(function() {
-        typing.classList.remove('active');
+    setTimeout(() => {
+        typing.classList.remove('visible');
         renderAI(id);
         renderOriginal(id);
         cta.style.display = 'block';
+        initChat(id);
 
         panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        initChat(id);
-    }, 1200);
+    }, 1500);
 }
 
-// === RENDER AI VIEW ===
 function renderAI(id) {
     const data = patientData[id];
     const ai = data.ai;
 
     let html = '<div class="ai-explanation fade-in">';
     html += '<div class="ai-header">';
-    html += '<div class="ai-avatar">&#x1F916;</div>';
+    html += '<div class="ai-avatar">MB</div>';
     html += '<div class="ai-header-text"><h3>MedBegrip AI</h3><span>Uitleg voor ' + data.name + '</span></div>';
     html += '</div>';
     html += '<div class="ai-content">';
-    html += '<div class="ai-greeting">' + processTerms(ai.greeting) + '</div>';
+    html += '<div class="ai-greeting">' + ai.greeting + '</div>';
 
-    // Term hint
-    html += '<div class="term-hint"><span class="term-hint-icon">&#x1F4A1;</span> Woorden met een <span class="med-term" data-term="voorbeeld" onclick="showTermPopup(event, \'voorbeeld\')" style="font-size:13px;">stippellijn</span> kun je aantikken voor uitleg</div>';
-
-    // Stats bar
-    let normalCount = data.lab.filter(l => l.status === 'normal').length;
-    let abnormalCount = data.lab.length - normalCount;
+    const normalCount = data.lab.filter(l => l.status === 'normal').length;
+    const abnormalCount = data.lab.length - normalCount;
     html += '<div class="stats-bar">';
     html += '<div class="stat"><div class="stat-dot" style="background: var(--accent)"></div> ' + normalCount + ' normaal</div>';
     html += '<div class="stat"><div class="stat-dot" style="background: var(--warning)"></div> ' + abnormalCount + ' afwijkend</div>';
@@ -1364,305 +1287,186 @@ function renderAI(id) {
 
     ai.results.forEach(r => {
         html += '<div class="result-item result-' + r.type + '">';
-        let icon = r.type === 'good' ? '&#x2705;' : r.type === 'attention' ? '&#x26A0;&#xFE0F;' : r.type === 'alert' ? '&#x1F6A8;' : '&#x2139;&#xFE0F;';
-        html += '<div class="result-title"><span class="emoji-icon">' + icon + '</span> ' + processTerms(r.title) + '</div>';
+        const label = r.type === 'good' ? 'GOED' : r.type === 'attention' ? 'AANDACHT' : r.type === 'alert' ? 'ACTIE NODIG' : 'INFO';
+        const labelClass = 'status-' + r.type;
+        html += '<div class="result-title"><span class="status-label ' + labelClass + '">' + label + '</span> ' + r.title + '</div>';
         html += '<div class="result-value">' + r.value + '</div>';
-        html += '<div class="result-explain">' + processTerms(r.explain) + '</div>';
+        html += '<div class="result-explain">' + r.explain + '</div>';
         html += '</div>';
     });
 
     html += '<div class="summary-box">';
     html += '<h4>Samenvatting</h4>';
-    html += '<p>' + processTerms(ai.summary) + '</p>';
-    html += '</div>';
-
+    html += '<p>' + ai.summary + '</p>';
     html += '<div class="action-items">';
-    html += '<h4 style="font-size:14px; margin-bottom:8px; color: var(--primary);">Wat kunt u doen?</h4>';
+    html += '<h4 style="margin-bottom: 8px;">Wat kunt u doen?</h4>';
     ai.actions.forEach(a => {
-        html += '<div class="action-item"><span class="action-icon">&#x27A1;&#xFE0F;</span> ' + processTerms(a) + '</div>';
+        html += '<div class="action-item"><span class="action-icon">&#x2022;</span> ' + a + '</div>';
     });
-    html += '</div>';
+    html += '</div></div>';
+
     html += '</div></div>';
 
     document.getElementById('ai-view').innerHTML = html;
 }
 
-// === RENDER ORIGINAL LAB VIEW ===
 function renderOriginal(id) {
     const data = patientData[id];
+
     let html = '<div class="lab-original fade-in">';
     html += '<div class="lab-header"><h3>Laboratoriumresultaten</h3><span class="lab-date">' + data.date + '</span></div>';
     html += '<table class="lab-table">';
-    html += '<tr><th>Test</th><th>Uitslag</th><th>Eenheid</th><th>Referentie</th><th></th></tr>';
+    html += '<tr><th>Bepaling</th><th>Uitslag</th><th>Eenheid</th><th>Referentie</th></tr>';
+
     data.lab.forEach(l => {
-        const flag = l.status === 'high' ? '<span class="lab-flag flag-high">&#x2191; H</span>' :
-                     l.status === 'low' ? '<span class="lab-flag flag-low">&#x2193; L</span>' : '';
-        html += '<tr><td>' + l.test + '</td><td><strong>' + l.value + '</strong></td><td>' + l.unit + '</td><td>' + l.ref + '</td><td>' + flag + '</td></tr>';
+        const cls = l.status === 'normal' ? 'value-normal' : l.status === 'high' ? 'value-high' : 'value-low';
+        const flag = l.status === 'high' ? '<span class="flag flag-high"></span>' : l.status === 'low' ? '<span class="flag flag-low"></span>' : '';
+        html += '<tr>';
+        html += '<td>' + l.test + '</td>';
+        html += '<td class="' + cls + '">' + l.value + flag + '</td>';
+        html += '<td>' + l.unit + '</td>';
+        html += '<td>' + l.ref + '</td>';
+        html += '</tr>';
     });
+
     html += '</table></div>';
+
     document.getElementById('original-view').innerHTML = html;
 }
 
-// === VIEW TOGGLE ===
 function toggleView(view) {
     currentView = view;
-    const aiView = document.getElementById('ai-view');
-    const origView = document.getElementById('original-view');
-    const levelSel = document.getElementById('level-selector');
-
-    if (view === 'ai') {
-        aiView.style.display = 'block';
-        origView.style.display = 'none';
-        levelSel.style.display = 'flex';
-        document.getElementById('btn-ai').classList.add('active');
-        document.getElementById('btn-original').classList.remove('active');
-    } else {
-        aiView.style.display = 'none';
-        origView.style.display = 'block';
-        levelSel.style.display = 'none';
-        document.getElementById('btn-original').classList.add('active');
-        document.getElementById('btn-ai').classList.remove('active');
-    }
+    document.getElementById('btn-ai').classList.toggle('active', view === 'ai');
+    document.getElementById('btn-original').classList.toggle('active', view === 'original');
+    document.getElementById('ai-view').style.display = view === 'ai' ? 'block' : 'none';
+    document.getElementById('original-view').style.display = view === 'original' ? 'block' : 'none';
+    document.getElementById('level-selector').style.display = view === 'ai' ? 'flex' : 'none';
 }
 
 function setLevel(level) {
     currentLevel = level;
     document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
-    // In a real app, this would switch between B1/B2/C1 versions of the text
 }
 
-// === CHAT SYSTEEM ===
-const chatResponses = {
-    routine: {
-        suggestions: [
-            "Wat is cholesterol precies?",
-            "Moet ik medicijnen nemen?",
-            "Wat kan ik zelf doen?",
-            "Wanneer moet ik terugkomen?"
-        ],
-        qa: {
-            "wat is cholesterol precies": "Cholesterol is een vetachtige stof in uw bloed. Uw lichaam maakt het zelf aan, en u krijgt het ook binnen via voeding. Een beetje cholesterol is nodig, maar als er te veel in uw bloed zit, vooral het slechte type ({LDL}), kan het zich ophopen in uw bloedvaten. Dat maakt de bloedvaten langzaam nauwer. Op termijn verhoogt dat de kans op hart- en vaatproblemen.",
-            "moet ik medicijnen nemen": "Dat hangt af van meerdere factoren. Uw huisarts kijkt niet alleen naar uw cholesterolwaarde, maar ook naar andere risicofactoren zoals leeftijd, bloeddruk, roken en familiegeschiedenis. Bij een {cholesterol} van 6.8 en {LDL} van 4.2 begint de arts meestal met leefstijladviezen. Als dat na 3 tot 6 maanden niet genoeg helpt, kan een cholesterolverlager worden overwogen.",
-            "wat kan ik zelf doen": "Er zijn veel dingen die u zelf kunt doen om uw {cholesterol} te verlagen:<br><br>Voeding: eet minder verzadigd vet (boter, kaas, vettig vlees, koekjes). Kies vaker voor vis, noten, olijfolie en groente.<br><br>Bewegen: al 30 minuten per dag wandelen, fietsen of zwemmen helpt om uw {LDL} te verlagen en uw {HDL} te verhogen.<br><br>Gewicht: als u overgewicht heeft, helpt een paar kilo afvallen al meetbaar.<br><br>Roken: als u rookt, is stoppen het belangrijkste dat u kunt doen voor uw bloedvaten.",
-            "wanneer moet ik terugkomen": "Uw huisarts zal waarschijnlijk over 3 tot 6 maanden een nieuwe bloedcontrole willen doen. Dan wordt gekeken of uw {cholesterol} is gedaald door de leefstijlaanpassingen. Het is verstandig om bij uw eerstvolgende afspraak het cholesterol te bespreken, zodat u samen een plan kunt maken.",
-            "is dit gevaarlijk": "Nee, dit is niet acuut gevaarlijk. Uw cholesterol is verhoogd, maar dit is een geleidelijk proces. Het risico zit in de lange termijn: als het jarenlang te hoog blijft, kan het uw bloedvaten beschadigen. Het goede nieuws is dat u er nu op tijd bij bent en dat u er veel zelf aan kunt doen. Uw andere waarden zijn allemaal goed.",
-            "mag ik nog kaas eten": "Ja, u mag nog kaas eten, maar het is verstandig om te minderen. Kaas bevat veel verzadigd vet, wat uw {LDL} verhoogt. Kies vaker voor magere kaas (20+ of 30+) in plaats van oude of belegen kaas. Probeer niet elke dag kaas te eten, en wissel af met andere beleg zoals hummus, kipfilet of avocado."
-        }
-    },
-    diabetes: {
-        suggestions: [
-            "Wat is HbA1c precies?",
-            "Zijn mijn nieren in gevaar?",
-            "Hoe verlaag ik mijn bloedsuiker?",
-            "Waarom is bloeddruk belangrijk?"
-        ],
-        qa: {
-            "wat is hba1c precies": "Uw {HbA1c} is een soort gemiddelde van uw bloedsuiker over de afgelopen 2 tot 3 maanden. Het meet hoeveel suiker er aan uw rode bloedcellen is geplakt. Uw waarde van 58 betekent dat uw bloedsuiker gemiddeld iets te hoog was. De streefwaarde is onder de 53. Het verschil is niet heel groot, maar het is belangrijk om dit te verbeteren om schade aan uw bloedvaten te voorkomen.",
-            "zijn mijn nieren in gevaar": "Uw nieren werken nu nog goed genoeg. Uw {eGFR} van 68 betekent dat ze goed filteren. Wel zit er een klein beetje eiwit in uw urine (albumine/kreatinine ratio 4.2). Dat is een vroeg waarschuwingssignaal dat uw nieren iets harder moeten werken. Bij diabetes willen we dit goed in de gaten houden. Met goede bloedsuiker- en bloeddrukregulatie kunt u voorkomen dat dit verergert.",
-            "hoe verlaag ik mijn bloedsuiker": "Er zijn meerdere manieren om uw bloedsuiker te verlagen:<br><br>Eten op vaste tijden: dit helpt uw lichaam om de suiker gelijkmatig te verwerken.<br><br>Minder snelle suikers: vermijd frisdrank, snoep, wit brood en gebak. Kies voor volkoren producten, groente en peulvruchten.<br><br>Bewegen na het eten: een wandeling van 15 minuten na de maaltijd helpt uw lichaam om suiker sneller op te nemen.<br><br>Medicatie: bespreek met uw arts of uw medicatie aangepast moet worden. Soms is een kleine dosisverhoging genoeg.",
-            "waarom is bloeddruk belangrijk": "Bij diabetes is een goede {bloeddruk} extra belangrijk. Hoge bloedsuiker en hoge bloeddruk samen beschadigen uw bloedvaten sneller. Dit kan leiden tot problemen met uw nieren, ogen en hart. Uw bloeddruk van 148/92 is te hoog (streefwaarde bij diabetes: onder 140/80). Door minder zout te eten, meer te bewegen en eventueel bloeddrukmedicatie kan dit goed worden behandeld.",
-            "moet ik insuline gebruiken": "Dat is nu nog niet aan de orde. Uw {HbA1c} van 58 is licht verhoogd, niet sterk. De eerste stap is om met leefstijl en eventueel een aanpassing van uw huidige medicatie te proberen of het omlaag kan. Uw arts of diabetesverpleegkundige kan dit het beste met u bespreken. Insuline komt pas in beeld als andere middelen onvoldoende werken."
-        }
-    },
-    nier: {
-        suggestions: [
-            "Wat betekent eGFR van 28?",
-            "Moet ik naar een specialist?",
-            "Wat kan ik zelf doen voor mijn nieren?",
-            "Waarom ben ik zo moe?"
-        ],
-        qa: {
-            "wat betekent egfr van 28": "Uw {eGFR} geeft aan hoe goed uw nieren werken. Gezonde nieren scoren boven de 90. Uw waarde van 28 betekent dat uw nieren nog maar op ongeveer 28% van hun normale capaciteit werken. Dit is ernstig verminderd. Uw nieren kunnen afvalstoffen minder goed uit uw bloed filteren, waardoor stoffen als {kreatinine} en ureum zich ophopen. Het is belangrijk dat u onder behandeling staat bij een {nefroloog}.",
-            "moet ik naar een specialist": "Ja, met een {eGFR} van 28 hoort u onder controle te zijn bij een {nefroloog} (nierarts). Deze specialist kan uw nierfunctie goed monitoren, uw medicatie aanpassen en met u bespreken wat er nodig is om verdere achteruitgang te vertragen. Als u nog niet bij een nefroloog bent, vraag dan uw huisarts om een doorverwijzing.",
-            "wat kan ik zelf doen voor mijn nieren": "Er zijn belangrijke dingen die u zelf kunt doen:<br><br>Zoutbeperking: minder zout eten verlicht de belasting op uw nieren. Gebruik kruiden in plaats van zout.<br><br>Eiwitbeperking: te veel eiwit is zwaar voor uw nieren. Uw nefroloog of dietist kan een passend voedingsadvies geven.<br><br>Voldoende drinken: water helpt uw nieren, maar overleg hoeveel met uw arts (bij nierproblemen kan te veel ook schadelijk zijn).<br><br>Medicatie trouw innemen: bloeddrukmedicatie en andere middelen beschermen uw nieren.<br><br>Vermijd pijnstillers zoals ibuprofen die uw nieren verder kunnen beschadigen.",
-            "waarom ben ik zo moe": "De vermoeidheid heeft twee oorzaken. Ten eerste: uw nieren maken minder {EPO}, een stof die uw lichaam nodig heeft om rode bloedcellen aan te maken. Daardoor heeft u {bloedarmoede} (uw hemoglobine is 6.8, dat is te laag). Met minder rode bloedcellen krijgt uw lichaam minder zuurstof, en dat maakt u moe.<br><br>Ten tweede: doordat uw nieren afvalstoffen minder goed afvoeren, stapelen die zich op in uw bloed. Ook dat kan vermoeidheid veroorzaken. Uw arts kan de bloedarmoede behandelen.",
-            "word ik hier beter van": "{Chronische nierschade} is helaas niet te genezen. De schade aan uw nieren is blijvend. Maar met goede behandeling, medicatie en leefstijlaanpassingen kunt u het stabiel houden en verdere achteruitgang vertragen. Veel mensen leven jarenlang goed met een verminderde nierfunctie, zolang ze goed onder controle blijven."
-        }
-    },
-    schildklier: {
-        suggestions: [
-            "Wat doet de schildklier?",
-            "Waarom ben ik zo moe en koud?",
-            "Moet ik medicijnen nemen?",
-            "Wat is Hashimoto?"
-        ],
-        qa: {
-            "wat doet de schildklier": "Uw schildklier is een klein orgaan in uw hals, vlak onder uw adamsappel. Het maakt hormonen aan die uw hele {stofwisseling} regelen: hoe snel uw lichaam energie verbrandt, hoe warm u het heeft, hoe snel uw hart klopt, en zelfs hoe u zich voelt. Als de schildklier te langzaam werkt, gaat alles in uw lichaam een beetje op de rem.",
-            "waarom ben ik zo moe en koud": "Dat komt doordat uw schildklier te langzaam werkt. Uw {TSH} van 12.8 is veel te hoog. TSH is een signaalstof die uw hersenen naar uw schildklier sturen. Als de schildklier niet genoeg hormoon maakt, gaat uw lichaam steeds harder roepen: meer hormoon! Daarom is uw TSH zo hoog. Met te weinig schildklierhormoon vertraagt uw {stofwisseling}. U verbrandt minder energie, waardoor u zich moe, koud en traag voelt. Dit is goed behandelbaar met een dagelijks tabletje.",
-            "moet ik medicijnen nemen": "Ja, bij uw waarden is medicatie nodig. Uw {TSH} van 12.8 en het lage schildklierhormoon ({FT4} van 8.2) laten duidelijk zien dat uw schildklier te weinig hormoon maakt. De behandeling is eenvoudig: een dagelijks tabletje levothyroxine (kunstmatig schildklierhormoon). U begint met een lage dosis en na 6 tot 8 weken wordt uw bloed opnieuw gecontroleerd om de dosis aan te passen. De meeste mensen voelen zich binnen enkele weken al beter.",
-            "wat is hashimoto": "De ziekte van {Hashimoto} is de meest voorkomende oorzaak van een trage schildklier. Bij Hashimoto valt uw eigen afweersysteem per ongeluk uw schildklier aan. Daardoor raakt de schildklier langzaam beschadigd en maakt steeds minder hormoon. Uw verhoogde anti-TPO antistoffen (250 kU/L) bevestigen dit. Het klinkt eng, maar het is goed behandelbaar. Met het dagelijkse tabletje levothyroxine vult u aan wat uw schildklier zelf niet meer maakt.",
-            "gaat dit weer over": "De ziekte van {Hashimoto} is een chronische aandoening, wat betekent dat uw schildklier niet vanzelf weer beter wordt. U zult waarschijnlijk levenslang het tabletje levothyroxine moeten nemen. Maar het goede nieuws: met de juiste dosis voelt u zich weer helemaal normaal. De meeste mensen merken niets meer van hun schildklierprobleem zodra de hormoonwaarden weer op peil zijn."
-        }
-    }
-};
+// === CHAT FUNCTIONALITY ===
 
-const fallbackResponses = [
-    "Dat is een goede vraag. In een echte situatie zou MedBegrip AI uw volledige dossier raadplegen om dit precies te beantwoorden. In deze demo kan ik u aanraden om deze vraag met uw arts te bespreken.",
-    "Ik begrijp uw vraag. MedBegrip zou hier normaal een persoonlijk antwoord geven op basis van uw uitslagen. Probeer een van de voorgestelde vragen, of stel uw vraag aan uw behandelend arts.",
-    "Goede vraag! In de volledige versie van MedBegrip zou ik uw uitslagen en medisch dossier erbij pakken om een antwoord op maat te geven. Heeft u een andere vraag over uw uitslagen?"
-];
+function initChat(id) {
+    const data = patientData[id];
+    const chatSection = document.getElementById('chat-section');
+    const messagesEl = document.getElementById('chat-messages');
+    const suggestionsEl = document.getElementById('chat-suggestions');
 
-let chatOpen = false;
-let chatBusy = false;
-let fallbackIndex = 0;
+    // Clear previous
+    messagesEl.innerHTML = '';
+    suggestionsEl.innerHTML = '';
 
-function toggleChat() {
-    const container = document.getElementById('chat-container');
-    chatOpen = !chatOpen;
-    if (chatOpen) {
-        container.classList.add('open');
-    } else {
-        container.classList.remove('open');
-    }
-}
+    // Welcome message
+    addChatMessage('bot', 'Heeft u vragen over uw uitslagen? Stel ze hieronder, of klik op een van de voorgestelde vragen. Ik leg het uit in begrijpelijke taal.');
 
-function initChat(patientId) {
-    const container = document.getElementById('chat-container');
-    const messages = document.getElementById('chat-messages');
-    const suggestions = document.getElementById('chat-suggestions');
-
-    container.style.display = 'block';
-    container.classList.add('open');
-    chatOpen = true;
-    messages.innerHTML = '';
-
-    addAIMessage('Heeft u vragen over uw uitslagen? Ik leg ze uit in eenvoudige taal. Kies een voorgestelde vraag of typ uw eigen vraag. Let op: ik ben een AI-hulpmiddel en vervang niet het gesprek met uw arts.');
-
-    const patientChat = chatResponses[patientId];
-    if (patientChat) {
-        suggestions.innerHTML = '';
-        suggestions.style.display = 'flex';
-        patientChat.suggestions.forEach(function(q) {
-            var btn = document.createElement('button');
-            btn.className = 'chat-suggestion-btn';
-            btn.textContent = q;
-            btn.onclick = function() { askSuggestion(q); };
-            suggestions.appendChild(btn);
+    // Add suggestions
+    if (data.chatQA) {
+        data.chatQA.forEach(qa => {
+            const btn = document.createElement('button');
+            btn.className = 'chat-suggestion';
+            btn.textContent = qa.question;
+            btn.onclick = () => askQuestion(qa.question);
+            suggestionsEl.appendChild(btn);
         });
     }
+
+    // Show chat section
+    chatSection.classList.add('visible');
 }
 
-function addUserMessage(text) {
-    var messages = document.getElementById('chat-messages');
-    var div = document.createElement('div');
-    div.className = 'chat-msg chat-msg-user';
-    div.innerHTML = '<div class="chat-bubble">' + escapeHtml(text) + '</div>';
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-}
+function addChatMessage(type, text) {
+    const messagesEl = document.getElementById('chat-messages');
+    const msg = document.createElement('div');
+    msg.className = 'chat-msg ' + type;
 
-function addAIMessage(text) {
-    var messages = document.getElementById('chat-messages');
-    var div = document.createElement('div');
-    div.className = 'chat-msg chat-msg-ai';
-    div.innerHTML = '<div class="chat-ai-avatar">&#x1F916;</div><div class="chat-bubble">' + processTerms(text) + '</div>';
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-}
+    const avatar = document.createElement('div');
+    avatar.className = 'chat-msg-avatar';
+    avatar.textContent = type === 'bot' ? 'MB' : 'U';
 
-function escapeHtml(text) {
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-msg-bubble';
+    bubble.textContent = text;
 
-function showChatTyping() {
-    var messages = document.getElementById('chat-messages');
-    var div = document.createElement('div');
-    div.className = 'chat-typing';
-    div.id = 'chat-typing-indicator';
-    div.innerHTML = '<div class="chat-ai-avatar">&#x1F916;</div><div class="chat-typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-}
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    messagesEl.appendChild(msg);
 
-function hideChatTyping() {
-    var el = document.getElementById('chat-typing-indicator');
-    if (el) el.remove();
+    // Scroll to bottom
+    messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
 function findAnswer(question) {
-    if (!currentPatient || !chatResponses[currentPatient]) return null;
-    var qa = chatResponses[currentPatient].qa;
-    var qLower = question.toLowerCase().replace(/[?!.,]/g, '').trim();
-    if (qa[qLower]) return qa[qLower];
-    var bestMatch = null;
-    var bestScore = 0;
-    for (var key in qa) {
-        var keyWords = key.split(' ');
-        var score = 0;
-        keyWords.forEach(function(word) {
-            if (word.length > 2 && qLower.indexOf(word) !== -1) score++;
+    if (!currentPatient) return null;
+    const data = patientData[currentPatient];
+    if (!data.chatQA) return null;
+
+    const q = question.toLowerCase();
+
+    // Score each QA pair
+    let bestMatch = null;
+    let bestScore = 0;
+
+    data.chatQA.forEach(qa => {
+        let score = 0;
+        qa.keywords.forEach(kw => {
+            if (q.includes(kw.toLowerCase())) {
+                score += 1;
+            }
         });
-        var ratio = score / keyWords.length;
-        if (ratio > bestScore && ratio >= 0.5) {
-            bestScore = ratio;
-            bestMatch = qa[key];
+        if (score > bestScore) {
+            bestScore = score;
+            bestMatch = qa;
         }
-    }
-    return bestMatch;
-}
-
-function askSuggestion(question) {
-    if (chatBusy) return;
-    document.getElementById('chat-input').value = '';
-    sendMessage(question);
-}
-
-function sendChatMessage() {
-    var input = document.getElementById('chat-input');
-    var text = input.value.trim();
-    if (!text || chatBusy) return;
-    input.value = '';
-    sendMessage(text);
-}
-
-function sendMessage(text) {
-    chatBusy = true;
-    document.getElementById('chat-send-btn').disabled = true;
-    addUserMessage(text);
-    document.getElementById('chat-suggestions').style.display = 'none';
-    showChatTyping();
-    var thinkTime = 800 + Math.random() * 1000;
-    setTimeout(function() {
-        hideChatTyping();
-        var answer = findAnswer(text);
-        if (answer) {
-            addAIMessage(answer);
-        } else {
-            addAIMessage(fallbackResponses[fallbackIndex % fallbackResponses.length]);
-            fallbackIndex++;
-        }
-        showFollowUpSuggestions();
-        chatBusy = false;
-        document.getElementById('chat-send-btn').disabled = false;
-        document.getElementById('chat-input').focus();
-    }, thinkTime);
-}
-
-function showFollowUpSuggestions() {
-    if (!currentPatient || !chatResponses[currentPatient]) return;
-    var suggestions = document.getElementById('chat-suggestions');
-    var qa = chatResponses[currentPatient].qa;
-    var allQuestions = Object.keys(qa);
-    var shuffled = allQuestions.sort(function() { return 0.5 - Math.random(); });
-    var picks = shuffled.slice(0, 2);
-    suggestions.innerHTML = '';
-    picks.forEach(function(q) {
-        var btn = document.createElement('button');
-        btn.className = 'chat-suggestion-btn';
-        btn.textContent = q.charAt(0).toUpperCase() + q.slice(1) + '?';
-        btn.onclick = function() { askSuggestion(btn.textContent); };
-        suggestions.appendChild(btn);
     });
-    suggestions.style.display = 'flex';
+
+    if (bestScore > 0) {
+        return bestMatch.answer;
+    }
+
+    return null;
 }
 
-// Close popup on escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closePopup();
-});
+function sendChat() {
+    const input = document.getElementById('chat-input');
+    const question = input.value.trim();
+    if (!question) return;
+
+    // Add user message
+    addChatMessage('user', question);
+    input.value = '';
+
+    // Show typing
+    document.getElementById('chat-typing').classList.add('visible');
+    document.getElementById('chat-send').disabled = true;
+
+    // Find answer with delay for natural feel
+    setTimeout(() => {
+        document.getElementById('chat-typing').classList.remove('visible');
+        document.getElementById('chat-send').disabled = false;
+
+        const answer = findAnswer(question);
+        if (answer) {
+            addChatMessage('bot', answer);
+        } else {
+            addChatMessage('bot', 'Ik kan deze vraag helaas niet beantwoorden op basis van uw uitslagen. Voor specifieke medische vragen raad ik u aan contact op te nemen met uw huisarts of specialist. Zij kunnen uw situatie het beste beoordelen.');
+        }
+    }, 1200);
+}
+
+function askQuestion(question) {
+    document.getElementById('chat-input').value = question;
+    sendChat();
+
+    // Remove suggestions after first click
+    document.getElementById('chat-suggestions').innerHTML = '';
+}
+
 </script>
+
 </body>
 </html>
