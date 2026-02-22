@@ -444,35 +444,7 @@
             font-weight: 700;
         }
 
-        /* Taalniveau selector */
-        .level-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
 
-        .level-btn {
-            padding: 8px 16px;
-            border: 2px solid var(--border);
-            border-radius: 20px;
-            background: var(--card);
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: var(--text-secondary);
-        }
-
-        .level-btn:hover {
-            border-color: var(--primary);
-        }
-
-        .level-btn.active {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-        }
 
         /* Chat section */
         .chat-section {
@@ -900,12 +872,7 @@
             <button class="toggle-btn" id="btn-original" onclick="toggleView('original')">Originele labwaarden</button>
         </div>
 
-        <div class="level-selector" id="level-selector">
-            <div class="section-label" style="width: 100%; margin-bottom: 4px;">Taalniveau</div>
-            <button class="level-btn active" onclick="setLevel('eenvoudig')">Eenvoudig (B1)</button>
-            <button class="level-btn" onclick="setLevel('standaard')">Standaard (B2)</button>
-            <button class="level-btn" onclick="setLevel('uitgebreid')">Uitgebreid (C1)</button>
-        </div>
+
 
         <div class="typing-indicator" id="typing">
             <span class="typing-dot"></span>
@@ -1294,7 +1261,6 @@ function selectPatient(id) {
     document.getElementById('btn-original').classList.remove('active');
     document.getElementById('ai-view').style.display = 'block';
     document.getElementById('original-view').style.display = 'none';
-    document.getElementById('level-selector').style.display = 'flex';
 
     setTimeout(() => {
         typing.classList.remove('visible');
@@ -1382,14 +1348,9 @@ function toggleView(view) {
     document.getElementById('btn-original').classList.toggle('active', view === 'original');
     document.getElementById('ai-view').style.display = view === 'ai' ? 'block' : 'none';
     document.getElementById('original-view').style.display = view === 'original' ? 'block' : 'none';
-    document.getElementById('level-selector').style.display = view === 'ai' ? 'flex' : 'none';
 }
 
-function setLevel(level) {
-    currentLevel = level;
-    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-}
+
 
 // === CHAT FUNCTIONALITY ===
 
