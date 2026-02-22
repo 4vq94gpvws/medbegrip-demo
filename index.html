@@ -802,6 +802,51 @@
                 padding: 6px 10px;
             }
         }
+
+        /* Medical term tooltips */
+        .med-term {
+            border-bottom: 1.5px dotted var(--primary);
+            cursor: pointer;
+            position: relative;
+            color: inherit;
+            transition: color 0.2s;
+        }
+        .med-term:hover {
+            color: var(--primary);
+        }
+        .med-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            z-index: 1000;
+            min-width: 220px;
+            max-width: 320px;
+            white-space: normal;
+            pointer-events: auto;
+        }
+        .med-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--card);
+        }
+        .med-tooltip-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
@@ -1275,7 +1320,7 @@ function renderAI(id) {
     html += '<div class="ai-header-text"><h3>MedBegrip AI</h3><span>Uitleg voor ' + data.name + '</span></div>';
     html += '</div>';
     html += '<div class="ai-content">';
-    html += '<div class="ai-greeting">' + ai.greeting + '</div>';
+    html += '<div class="ai-greeting">' + highlightMedicalTerms(ai.greeting) + '</div>';
 
     const normalCount = data.lab.filter(l => l.status === 'normal').length;
     const abnormalCount = data.lab.length - normalCount;
@@ -1291,13 +1336,13 @@ function renderAI(id) {
         const labelClass = 'status-' + r.type;
         html += '<div class="result-title"><span class="status-label ' + labelClass + '">' + label + '</span> ' + r.title + '</div>';
         html += '<div class="result-value">' + r.value + '</div>';
-        html += '<div class="result-explain">' + r.explain + '</div>';
+        html += '<div class="result-explain">' + highlightMedicalTerms(r.explain) + '</div>';
         html += '</div>';
     });
 
     html += '<div class="summary-box">';
     html += '<h4>Samenvatting</h4>';
-    html += '<p>' + ai.summary + '</p>';
+    html += '<p>' + highlightMedicalTerms(ai.summary) + '</p>';
     html += '<div class="action-items">';
     html += '<h4 style="margin-bottom: 8px;">Wat kunt u doen?</h4>';
     ai.actions.forEach(a => {
@@ -1465,6 +1510,116 @@ function askQuestion(question) {
     // Remove suggestions after first click
     document.getElementById('chat-suggestions').innerHTML = '';
 }
+
+
+    // Medische termen woordenboek
+    const medicalTerms = {
+        'hemoglobine': 'Een eiwit in rode bloedcellen dat zuurstof door uw lichaam vervoert. Een te lage waarde kan duiden op bloedarmoede.',
+        'glucose': 'Bloedsuiker. Dit is de belangrijkste brandstof voor uw lichaam. Een te hoge waarde kan wijzen op diabetes.',
+        'cholesterol': 'Een vetachtige stof in uw bloed. Uw lichaam heeft het nodig, maar te veel verhoogt het risico op hart- en vaatziekten.',
+        'hdl': 'De "goede" cholesterol. HDL ruimt overtollig cholesterol op uit uw bloedvaten en beschermt zo tegen hart- en vaatziekten.',
+        'ldl': 'De "slechte" cholesterol. LDL kan zich ophopen in uw bloedvaten en deze vernauwen, wat het risico op een hartaanval verhoogt.',
+        'triglyceriden': 'Vetten in uw bloed die uw lichaam als energie gebruikt. Te hoge waarden verhogen het risico op hart- en vaatziekten.',
+        'tsh': 'Schildklierstimulerend hormoon. Dit hormoon stuurt de schildklier aan. Een te hoge waarde kan betekenen dat uw schildklier te traag werkt.',
+        'vrij t4': 'Een schildklierhormoon dat uw stofwisseling regelt. Een te lage waarde kan duiden op een te traag werkende schildklier.',
+        'anti-tpo': 'Antistoffen tegen schildklierweefsel. Hoge waarden wijzen op een auto-immuunreactie waarbij het lichaam de eigen schildklier aanvalt.',
+        'hba1c': 'Langetermijn bloedsuiker. Laat zien hoe hoog uw bloedsuiker gemiddeld was over de afgelopen 2-3 maanden.',
+        'kreatinine': 'Een afvalstof van uw spieren die door de nieren wordt gefilterd. Een hoge waarde kan betekenen dat uw nieren minder goed werken.',
+        'egfr': 'Geschatte nierfunctie. Geeft aan hoe goed uw nieren het bloed filteren. Een lagere waarde betekent verminderde nierfunctie.',
+        'kalium': 'Een mineraal dat belangrijk is voor uw hartritme en spierfunctie. Te hoog of te laag kan gevaarlijk zijn.',
+        'albumine': 'Een eiwit in uw bloed dat belangrijk is voor uw voedingstoestand en vochtbalans in het lichaam.',
+        'calcium': 'Een mineraal dat nodig is voor sterke botten, spierfunctie en zenuwwerking.',
+        'fosfaat': 'Een mineraal dat samenwerkt met calcium voor sterke botten. Bij nierproblemen kan de fosfaatwaarde stijgen.',
+        'erytropoetine': 'Een hormoon dat door de nieren wordt gemaakt en de aanmaak van rode bloedcellen stimuleert.',
+        'bloeddruk': 'De druk waarmee het bloed door uw slagaders stroomt. Te hoge bloeddruk belast het hart en de bloedvaten.',
+        'vitamine d': 'Een vitamine die belangrijk is voor sterke botten en uw afweersysteem. Wordt aangemaakt door zonlicht op de huid.',
+        'vitamine b12': 'Een vitamine die nodig is voor de aanmaak van rode bloedcellen en het goed functioneren van uw zenuwstelsel.',
+        'ferritine': 'Een eiwit dat ijzer opslaat in uw lichaam. Een lage waarde wijst op een laag ijzergehalte.',
+        'ijzer': 'Een mineraal dat nodig is om zuurstof in het bloed te vervoeren. Te weinig ijzer kan leiden tot bloedarmoede.',
+        'leukocyten': 'Witte bloedcellen. Onderdeel van uw afweersysteem dat infecties bestrijdt.',
+        'trombocyten': 'Bloedplaatjes. Zorgen ervoor dat uw bloed kan stollen bij een wond.',
+        'hypothyreodie': 'Een te traag werkende schildklier. Hierdoor maakt uw lichaam te weinig schildklierhormonen.',
+        'bloedsuiker': 'De hoeveelheid suiker (glucose) in uw bloed. Uw lichaam gebruikt dit als brandstof.',
+        'diabetes': 'Een aandoening waarbij uw lichaam moeite heeft om de bloedsuiker te reguleren.',
+        'nierfunctie': 'Hoe goed uw nieren werken bij het filteren van afvalstoffen uit het bloed.',
+        'schildklier': 'Een klier in uw hals die hormonen maakt voor uw stofwisseling, energieniveau en lichaamstemperatuur.',
+        'bloedarmoede': 'Een tekort aan rode bloedcellen of hemoglobine, waardoor uw lichaam minder zuurstof kan vervoeren.',
+        'cholesterolverlager': 'Medicijnen (zoals statines) die het cholesterolgehalte in uw bloed verlagen.',
+        'stofwisseling': 'Alle processen in uw lichaam die voedsel omzetten in energie en bouwstoffen.',
+        'rode bloedcellen': 'Cellen in uw bloed die zuurstof vervoeren van de longen naar de rest van uw lichaam.',
+        'afweersysteem': 'Het verdedigingssysteem van uw lichaam dat infecties en ziekten bestrijdt.'
+    };
+
+    // Functie om medische termen te highlighten in tekst
+    function highlightMedicalTerms(text) {
+        // Sorteer termen op lengte (langste eerst) om overlap te voorkomen
+        const sortedTerms = Object.keys(medicalTerms).sort((a, b) => b.length - a.length);
+        
+        let result = text;
+        const replacements = [];
+        
+        sortedTerms.forEach(term => {
+            // Case-insensitive zoeken, maar hele woorden (of deel van samenstellingen)
+            const regex = new RegExp('(?<![<\/a-zA-Z])(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![a-zA-Z"\'<>])', 'gi');
+            result = result.replace(regex, function(match) {
+                return '<span class="med-term" data-term="' + term + '" onclick="showTermTooltip(this, \'' + term.replace(/'/g, "\\'") + '\')">' + match + '</span>';
+            });
+        });
+        
+        return result;
+    }
+
+    // Tooltip tonen bij klik
+    let activeTooltip = null;
+    
+    function showTermTooltip(element, term) {
+        // Sluit bestaande tooltip
+        closeTooltip();
+        
+        const definition = medicalTerms[term.toLowerCase()];
+        if (!definition) return;
+        
+        const tooltip = document.createElement('div');
+        tooltip.className = 'med-tooltip';
+        tooltip.innerHTML = '<div class="med-tooltip-title">' + term.charAt(0).toUpperCase() + term.slice(1) + '</div>' + definition;
+        
+        element.appendChild(tooltip);
+        activeTooltip = tooltip;
+        
+        // Controleer of tooltip buiten scherm valt
+        const rect = tooltip.getBoundingClientRect();
+        if (rect.left < 10) {
+            tooltip.style.left = '0';
+            tooltip.style.transform = 'none';
+        }
+        if (rect.right > window.innerWidth - 10) {
+            tooltip.style.left = 'auto';
+            tooltip.style.right = '0';
+            tooltip.style.transform = 'none';
+        }
+        if (rect.top < 10) {
+            tooltip.style.bottom = 'auto';
+            tooltip.style.top = 'calc(100% + 8px)';
+            // Verplaats pijl naar boven
+            tooltip.style.setProperty('--arrow-top', '-12px');
+        }
+        
+        event.stopPropagation();
+    }
+    
+    function closeTooltip() {
+        if (activeTooltip) {
+            activeTooltip.remove();
+            activeTooltip = null;
+        }
+    }
+    
+    // Sluit tooltip bij klik ergens anders
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.med-term')) {
+            closeTooltip();
+        }
+    });
 
 </script>
 
