@@ -815,10 +815,7 @@
             color: var(--primary);
         }
         .med-tooltip {
-            position: absolute;
-            bottom: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%);
+            position: fixed;
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -837,7 +834,7 @@
             content: '';
             position: absolute;
             top: 100%;
-            left: 50%;
+            left: var(--arrow-left, 50%);
             transform: translateX(-50%);
             border: 6px solid transparent;
             border-top-color: var(--card);
